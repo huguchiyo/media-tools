@@ -14,8 +14,6 @@ import os
 import sys
 import shutil
 import re
-import hashlib
-import subprocess
 import json
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
@@ -25,6 +23,13 @@ if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
+# IDE/パイプから実行時もすぐ表示されるようにバッファを無効化
+try:
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(line_buffering=True)
+except Exception:
+    pass
 
 # 動画ファイルの拡張子
 VIDEO_EXTENSIONS = {'.mp4', '.MP4', '.mov', '.MOV', '.m2ts', '.M2TS', '.mts', '.MTS', '.avi', '.AVI', '.mkv', '.MKV'}
@@ -102,135 +107,6 @@ def generate_new_filename(original_filename: str, year: str, month_day: str) -> 
     return f"{year}_{month_day}_{original_filename}"
 
 
-def calculate_file_hash(file_path: Path, chunk_size: int = 8192) -> Optional[str]:
-    """
-    ファイルのMD5ハッシュを計算
-    
-    Args:
-        file_path: ファイルパス
-        chunk_size: チャンクサイズ
-        
-    Returns:
-        ハッシュ値（16進数文字列）、失敗時はNone
-    """
-    hash_md5 = hashlib.md5()
-    try:
-        with open(file_path, 'rb') as f:
-            while chunk := f.read(chunk_size):
-                hash_md5.update(chunk)
-        return hash_md5.hexdigest()
-    except Exception as e:
-        print(f"  エラー: ハッシュ値計算に失敗: {e}")
-        return None
-
-
-def get_video_duration(file_path: Path) -> Optional[float]:
-    """
-    動画ファイルの長さ（秒）を取得
-    
-    Args:
-        file_path: 動画ファイルパス
-        
-    Returns:
-        動画の長さ（秒）、失敗時はNone
-    """
-    try:
-        command = [
-            'ffprobe',
-            '-v', 'error',
-            '-show_entries', 'format=duration',
-            '-of', 'json',
-            str(file_path)
-        ]
-        result = subprocess.run(command, capture_output=True, text=True, timeout=30)
-        if result.returncode == 0:
-            metadata = json.loads(result.stdout)
-            duration = metadata.get('format', {}).get('duration')
-            if duration:
-                return float(duration)
-    except subprocess.TimeoutExpired:
-        print(f"  警告: 動画の長さ取得がタイムアウトしました: {file_path.name}")
-    except FileNotFoundError:
-        print(f"  警告: ffprobeが見つかりません。動画の長さによる判定はスキップされます。")
-    except Exception as e:
-        # エラーは静かに無視（動画の長さ取得は補助的な判定のため）
-        pass
-    return None
-
-
-def is_naming_rule_followed(filename: str, year: str, month_day: str, original_name: str) -> bool:
-    """
-    ファイル名が命名規則に従っているかチェック
-    
-    命名規則: 年_月日_元のファイル名（例：2025_0102_IMG_0363.MOV）
-    
-    Args:
-        filename: チェックするファイル名
-        year: 年（例：2025）
-        month_day: 月日（例：0102）
-        original_name: 元のファイル名（例：IMG_0363.MOV）
-        
-    Returns:
-        命名規則に従っている場合True
-    """
-    expected_pattern = f"{year}_{month_day}_{original_name}"
-    return filename == expected_pattern
-
-
-def find_duplicate_in_target(
-    target_dir: Path,
-    source_file: Path,
-    source_hash: str,
-    year: str,
-    month_day: str,
-    original_name: str
-) -> Tuple[Optional[Path], Optional[Path]]:
-    """
-    移動先フォルダ内に同一ファイルが存在するかチェック
-    命名規則に従っているファイルのみを重複として扱う
-    
-    Args:
-        target_dir: 移動先フォルダ
-        source_file: 元のファイル
-        source_hash: 元のファイルのハッシュ値
-        year: 年（例：2025）
-        month_day: 月日（例：0102）
-        original_name: 元のファイル名（例：IMG_0363.MOV）
-        
-    Returns:
-        (重複ファイルのパス, 警告ファイルのパス) のタプル
-        - 重複ファイルのパス: 存在し、命名規則に従っている場合
-        - 警告ファイルのパス: ハッシュ値は同じだが、命名規則に従っていない場合
-        - どちらもNone: 存在しない場合
-    """
-    if not target_dir.exists():
-        return None, None
-    
-    source_size = source_file.stat().st_size
-    warning_file = None
-    
-    # 移動先フォルダ内のすべてのファイルをチェック
-    for existing_file in target_dir.iterdir():
-        if not existing_file.is_file():
-            continue
-        
-        # ファイルサイズで確認
-        if existing_file.stat().st_size == source_size:
-            # サイズが同じ場合、ハッシュで確認
-            existing_hash = calculate_file_hash(existing_file)
-            if existing_hash and existing_hash == source_hash:
-                # ハッシュ値が同じ場合、命名規則に従っているかチェック
-                if is_naming_rule_followed(existing_file.name, year, month_day, original_name):
-                    return existing_file, None
-                else:
-                    # ハッシュ値は同じだが、命名規則に従っていない
-                    # これは別のファイル名で既に存在することを意味する
-                    # 警告を出すが、重複として扱わない（削除しない）
-                    warning_file = existing_file
-    
-    return None, warning_file
-
-
 def move_videos_from_source(
     source_dir: Path,
     target_base_dir: Path,
@@ -258,7 +134,8 @@ def move_videos_from_source(
     
     files_to_move = []
     folders_to_check_empty = set()  # 空になったフォルダを記録
-    
+
+    print("  ソースフォルダをスキャンしています...", flush=True)
     # 日付フォルダと年フォルダをスキャン
     for root, dirs, files in os.walk(source_dir):
         folder_name = os.path.basename(root)
@@ -322,168 +199,74 @@ def move_videos_from_source(
                     'source_folder': folder_path
                 })
     
-    print(f"  処理対象: {len(files_to_move)}個の動画ファイル")
+    total = len(files_to_move)
+    print(f"  処理対象: {total}個の動画ファイル", flush=True)
     
     # 処理を実行
-    for item in files_to_move:
+    for i, item in enumerate(files_to_move, 1):
         source = item['source']
         dest = item['dest']
         year = item['year']
         month_day = item['month_day']  # 追加
         original_name = item['original_name']
         new_name = item['new_name']
+        progress = f"[{i}/{total}]"
+        print(f"  {progress} 件目: {source.name} ...", flush=True)
         
         stats['processed'] += 1
-        
-        # ファイルのハッシュ値を計算
-        source_hash = calculate_file_hash(source)
-        if source_hash is None:
-            stats['errors'].append(f"ハッシュ値計算失敗: {source.relative_to(source_dir)}")
-            continue
         
         # 年フォルダが存在しない場合は作成
         year_folder = dest.parent
         if not year_folder.exists():
             if not dry_run:
                 year_folder.mkdir(parents=True, exist_ok=True)
-            print(f"  [新規作成] 年フォルダ: {year}/")
+            print(f"  {progress} [新規作成] 年フォルダ: {year}/", flush=True)
         
-        # 既に同じファイルが存在するかチェック（命名規則に従っている場合のみ）
-        duplicate_file, warning_file = find_duplicate_in_target(
-            year_folder, source, source_hash, year, month_day, original_name
-        )
-        
-        # 警告ファイルがある場合（ハッシュ値は同じだが、命名規則に従っていない）
-        if warning_file:
-            print(f"  警告: 同じハッシュ値のファイルが存在しますが、命名規則に従っていません")
-            print(f"        移動元: {source.relative_to(source_dir)}")
-            print(f"        移動先（既存）: {warning_file.relative_to(target_base_dir)}")
-            print(f"        元のファイルは削除されません")
-            stats['skipped_duplicate'] += 1
-            continue
-        
-        # 重複ファイルがある場合（命名規則に従っている）
-        if duplicate_file:
-            print(f"  [既に存在するため削除] 移動元: {source.relative_to(source_dir)}")
-            print(f"                        移動先（既存）: {duplicate_file.relative_to(target_base_dir)}")
-            
+        # 重複判定: 移動先に同じファイル名が既にあるか（ファイル名のみで判定）
+        if dest.exists():
+            print(f"  {progress} [既に存在するため削除] 移動元: {source.relative_to(source_dir)}", flush=True)
+            print(f"                        移動先（既存）: {dest.relative_to(target_base_dir)}")
+            print(f"                        （同一ファイル名のため重複と判定）")
             if not dry_run:
-                # 元のファイルを削除
                 try:
                     source.unlink()
-                    print(f"  [削除完了] 元のファイルを削除しました")
+                    print(f"  {progress} [削除完了] 元のファイルを削除しました", flush=True)
                     stats['skipped_duplicate'] += 1
                 except Exception as e:
                     error_msg = f"削除エラー: {source.relative_to(source_dir)} -> {str(e)}"
-                    print(f"  [エラー] {error_msg}")
+                    print(f"  {progress} [エラー] {error_msg}", flush=True)
                     stats['errors'].append(error_msg)
             else:
-                print(f"  [削除予定] 元のファイルを削除します")
+                print(f"  {progress} [削除予定] 元のファイルを削除します", flush=True)
                 stats['skipped_duplicate'] += 1
             continue
-        
-        # 新しいファイル名で既に存在するかチェック（念のため）
-        # 判定の優先順位：
-        # 1. ハッシュ値が同じ → 同一ファイル（最優先）
-        # 2. 命名規則に従っている + 同一名称 + 動画の長さが同じ → ほぼ同一ファイル
-        if dest.exists():
-            # 優先度1: ハッシュ値を確認
-            dest_hash = calculate_file_hash(dest)
-            if dest_hash and dest_hash == source_hash:
-                # ハッシュ値が同じ場合（最優先：同一ファイル）
-                if is_naming_rule_followed(dest.name, year, month_day, original_name):
-                    print(f"  [既に存在するため削除] 移動元: {source.relative_to(source_dir)}")
-                    print(f"                        移動先（既存）: {dest.relative_to(target_base_dir)}")
-                    print(f"                        （ハッシュ値が同じため同一ファイルと判定）")
-                    
-                    if not dry_run:
-                        # 元のファイルを削除
-                        try:
-                            source.unlink()
-                            print(f"  [削除完了] 元のファイルを削除しました")
-                            stats['skipped_duplicate'] += 1
-                        except Exception as e:
-                            error_msg = f"削除エラー: {source.relative_to(source_dir)} -> {str(e)}"
-                            print(f"  [エラー] {error_msg}")
-                            stats['errors'].append(error_msg)
-                    else:
-                        print(f"  [削除予定] 元のファイルを削除します")
-                        stats['skipped_duplicate'] += 1
-                    continue
-                else:
-                    # ハッシュ値は同じだが命名規則に従っていない
-                    print(f"  警告: 同じハッシュ値のファイルが存在しますが、命名規則に従っていません")
-                    print(f"        移動元: {source.relative_to(source_dir)}")
-                    print(f"        移動先（既存）: {dest.relative_to(target_base_dir)}")
-                    print(f"        元のファイルは削除されません")
-                    stats['skipped_duplicate'] += 1
-                    continue
-            
-            # 優先度2: 命名規則に従っている + 同一名称 + 動画の長さが同じ
-            if is_naming_rule_followed(dest.name, year, month_day, original_name):
-                # 動画の長さを取得して比較
-                source_duration = get_video_duration(source)
-                dest_duration = get_video_duration(dest)
-                
-                if source_duration is not None and dest_duration is not None:
-                    # 動画の長さが同じかチェック（0.1秒以内の誤差を許容）
-                    duration_diff = abs(source_duration - dest_duration)
-                    if duration_diff <= 0.1:
-                        print(f"  [既に存在するため削除] 移動元: {source.relative_to(source_dir)}")
-                        print(f"                        移動先（既存）: {dest.relative_to(target_base_dir)}")
-                        print(f"                        （命名規則準拠 + 同一名称 + 動画の長さが同じため同一と判定）")
-                        
-                        if not dry_run:
-                            # 元のファイルを削除
-                            try:
-                                source.unlink()
-                                print(f"  [削除完了] 元のファイルを削除しました")
-                                stats['skipped_duplicate'] += 1
-                            except Exception as e:
-                                error_msg = f"削除エラー: {source.relative_to(source_dir)} -> {str(e)}"
-                                print(f"  [エラー] {error_msg}")
-                                stats['errors'].append(error_msg)
-                        else:
-                            print(f"  [削除予定] 元のファイルを削除します")
-                            stats['skipped_duplicate'] += 1
-                        continue
-                    else:
-                        # 命名規則に従っているが動画の長さが異なる
-                        print(f"  警告: 命名規則に従っている同一名称のファイルが存在しますが、動画の長さが異なります")
-                        print(f"        移動元: {source.relative_to(source_dir)} (長さ: {source_duration:.2f}秒)")
-                        print(f"        移動先（既存）: {dest.relative_to(target_base_dir)} (長さ: {dest_duration:.2f}秒)")
-                        print(f"        元のファイルは削除されません")
-                        stats['skipped_duplicate'] += 1
-                        continue
-                else:
-                    # 動画の長さを取得できなかった場合
-                    print(f"  警告: 命名規則に従っている同一名称のファイルが存在しますが、動画の長さを取得できませんでした")
-                    print(f"        移動元: {source.relative_to(source_dir)}")
-                    print(f"        移動先（既存）: {dest.relative_to(target_base_dir)}")
-                    print(f"        元のファイルは削除されません（動画の長さによる判定ができませんでした）")
-                    stats['skipped_duplicate'] += 1
-                    continue
-            else:
-                # 命名規則に従っていない
-                print(f"  警告: 同一名称のファイルが存在しますが、命名規則に従っていません")
-                print(f"        移動元: {source.relative_to(source_dir)}")
-                print(f"        移動先（既存）: {dest.relative_to(target_base_dir)}")
-                print(f"        元のファイルは削除されません")
-                stats['skipped_duplicate'] += 1
-                continue
         
         # 移動を実行
         try:
             if dry_run:
-                print(f"  [移動予定] {source.relative_to(source_dir)}")
+                print(f"  {progress} [移動予定] {source.relative_to(source_dir)}", flush=True)
                 print(f"            -> {dest.relative_to(target_base_dir)}")
             else:
                 # 年フォルダが存在しない場合は作成
                 year_folder.mkdir(parents=True, exist_ok=True)
-                
-                # ファイルを移動
-                shutil.move(str(source), str(dest))
-                print(f"  [移動完了] {source.relative_to(source_dir)}")
+                try:
+                    size_mb = source.stat().st_size / (1024 * 1024)
+                    size_str = f" ({size_mb:.1f} MB)"
+                except Exception:
+                    size_str = ""
+                print(f"  {progress} [移動中] {source.relative_to(source_dir)} -> ...{size_str}", flush=True)
+                # 同一ドライブなら os.rename（一瞬）、別ドライブなら shutil.move（コピー＋削除）
+                src_resolved = source.resolve()
+                dest_resolved = dest.resolve()
+                same_drive = (
+                    getattr(src_resolved, 'drive', '') and getattr(dest_resolved, 'drive', '')
+                    and src_resolved.drive.upper() == dest_resolved.drive.upper()
+                )
+                if same_drive:
+                    os.rename(str(src_resolved), str(dest))
+                else:
+                    shutil.move(str(src_resolved), str(dest))
+                print(f"  {progress} [移動完了] {source.relative_to(source_dir)}", flush=True)
                 print(f"            -> {dest.relative_to(target_base_dir)}")
             
             stats['moved'] += 1
@@ -501,7 +284,7 @@ def move_videos_from_source(
             
         except Exception as e:
             error_msg = f"エラー: {source.relative_to(source_dir)} -> {str(e)}"
-            print(f"  [エラー] {error_msg}")
+            print(f"  {progress} [エラー] {error_msg}", flush=True)
             stats['errors'].append(error_msg)
     
     # 空になったフォルダを削除
@@ -576,12 +359,12 @@ def move_videos_to_movie(
     """
     target_path = Path(target_dir)
     
-    print("=" * 60)
-    print("動画ファイル移動スクリプト")
-    print("=" * 60)
-    print(f"モード: {'DRY RUN（実際には移動しません）' if dry_run else '実行モード（実際に移動します）'}")
-    print(f"移動先: {target_dir}")
-    print()
+    print("=" * 60, flush=True)
+    print("動画ファイル移動スクリプト", flush=True)
+    print("=" * 60, flush=True)
+    print(f"モード: {'DRY RUN（実際には移動しません）' if dry_run else '実行モード（実際に移動します）'}", flush=True)
+    print(f"移動先: {target_dir}", flush=True)
+    print(flush=True)
     
     total_stats = {
         'processed': 0,
@@ -599,7 +382,7 @@ def move_videos_to_movie(
             print(f"警告: ソースフォルダが見つかりません: {source_dir}")
             continue
         
-        print(f"処理中: {source_dir}")
+        print(f"処理中: {source_dir}", flush=True)
         stats = move_videos_from_source(source_path, target_path, dry_run)
         
         # 統計情報を集計
