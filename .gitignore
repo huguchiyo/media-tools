@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# 機密・認証（絶対にコミットしない）
+youtube/client_secrets*.json
+youtube/config.json
+youtube/*-oauth2.json
+
+# ログ
+youtube/logs/
+*.log
+
+# 個人データ・実行結果（環境ごとに異なる）
+youtube/data/uploaded_from_youtube.txt
+youtube/data/upload_runs.json
+youtube/data/upload_runs.md
+youtube/data/uploaded_list.json
+youtube/data/uploaded_list.txt
+youtube/data/unuploaded_videos.json
+youtube/data/playlist_additions_log.json
+VideoMoveTools/moved_videos_log.json
+VideoMoveTools/moved_videos_log.md
+
+# バックアップ・一時
+*.backup
+*.bak
+*.tmp
+*.temp
+
+# OS・IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# テスト
+.pytest_cache/
+.coverage
+htmlcov/
+
+# プレビュー出力（任意生成）
+youtube/data/upload_targets*.txt

@@ -1,0 +1,452 @@
+================================================================================
+iPhone写真フォルダ 重複分析レポート
+生成日時: 2026-01-02 22:26:07
+================================================================================
+
+【フォルダ統計】
+  iPhone_16_Naoki: 1895 ファイル
+  iPhone_Naoki: 1162 ファイル
+  日付フォルダ数: 265
+
+【重複サマリー】
+  完全に同一ファイル（名前・拡張子・サイズ）: 353 件
+  HEIC vs JPG の重複: 726 件
+  iPhone_16_Naoki にのみ存在: 503 ファイル
+  iPhone_Naoki にのみ存在: 83 ファイル
+
+【完全に同一ファイル（削除候補）】
+
+  2022-01-04/IMG_7327.JPG
+    iPhone_16_Naoki: 3,199,212 bytes
+    iPhone_Naoki: 3,199,212 bytes
+  2022-06-27/DSC07674.JPG
+    iPhone_16_Naoki: 268,555 bytes
+    iPhone_Naoki: 268,555 bytes
+  2022-06-27/IMG_7813.JPG
+    iPhone_16_Naoki: 4,309,489 bytes
+    iPhone_Naoki: 4,309,489 bytes
+  2022-06-27/DSC07677.JPG
+    iPhone_16_Naoki: 306,386 bytes
+    iPhone_Naoki: 306,386 bytes
+  2022-06-27/DSC07678.JPG
+    iPhone_16_Naoki: 317,078 bytes
+    iPhone_Naoki: 317,078 bytes
+  2022-06-27/DSC07679.JPG
+    iPhone_16_Naoki: 290,314 bytes
+    iPhone_Naoki: 290,314 bytes
+  2022-06-27/DSC07680.JPG
+    iPhone_16_Naoki: 314,321 bytes
+    iPhone_Naoki: 314,321 bytes
+  2022-06-27/DSC07675.JPG
+    iPhone_16_Naoki: 286,783 bytes
+    iPhone_Naoki: 286,783 bytes
+  2022-06-27/DSC07676.JPG
+    iPhone_16_Naoki: 251,280 bytes
+    iPhone_Naoki: 251,280 bytes
+  2022-06-30/IMG_7837.JPG
+    iPhone_16_Naoki: 4,123,633 bytes
+    iPhone_Naoki: 4,123,633 bytes
+  2022-06-30/IMG_7839.JPG
+    iPhone_16_Naoki: 4,260,361 bytes
+    iPhone_Naoki: 4,260,361 bytes
+  2022-06-30/IMG_7840.JPG
+    iPhone_16_Naoki: 4,455,532 bytes
+    iPhone_Naoki: 4,455,532 bytes
+  2022-06-30/IMG_7841.JPG
+    iPhone_16_Naoki: 4,171,804 bytes
+    iPhone_Naoki: 4,171,804 bytes
+  2022-07-01/IMG_7847.JPG
+    iPhone_16_Naoki: 3,964,086 bytes
+    iPhone_Naoki: 3,964,086 bytes
+  2022-07-03/IMG_7875.JPG
+    iPhone_16_Naoki: 6,089,698 bytes
+    iPhone_Naoki: 6,089,698 bytes
+  2022-07-03/IMG_7874.JPG
+    iPhone_16_Naoki: 4,309,670 bytes
+    iPhone_Naoki: 4,309,670 bytes
+  2022-07-05/IMG_7896.JPG
+    iPhone_16_Naoki: 4,110,182 bytes
+    iPhone_Naoki: 4,110,182 bytes
+  2022-07-23/IMG_7974.JPG
+    iPhone_16_Naoki: 3,071,056 bytes
+    iPhone_Naoki: 3,071,056 bytes
+  2022-07-29/IMG_8009.JPG
+    iPhone_16_Naoki: 4,802,540 bytes
+    iPhone_Naoki: 4,802,540 bytes
+  2022-08-06/IMG_8023.JPG
+    iPhone_16_Naoki: 3,007,776 bytes
+    iPhone_Naoki: 3,007,776 bytes
+  2022-08-11/IMG_8032.JPG
+    iPhone_16_Naoki: 5,643,600 bytes
+    iPhone_Naoki: 5,643,600 bytes
+  2022-08-13/IMG_8036.JPG
+    iPhone_16_Naoki: 3,900,374 bytes
+    iPhone_Naoki: 3,900,374 bytes
+  2022-08-14/IMG_8054.JPG
+    iPhone_16_Naoki: 3,553,670 bytes
+    iPhone_Naoki: 3,553,670 bytes
+  2022-08-14/IMG_8071.JPG
+    iPhone_16_Naoki: 2,625,960 bytes
+    iPhone_Naoki: 2,625,960 bytes
+  2022-08-14/IMG_8069.JPG
+    iPhone_16_Naoki: 3,235,419 bytes
+    iPhone_Naoki: 3,235,419 bytes
+  2022-08-14/IMG_8055.JPG
+    iPhone_16_Naoki: 3,585,122 bytes
+    iPhone_Naoki: 3,585,122 bytes
+  2022-08-14/IMG_8057.JPG
+    iPhone_16_Naoki: 1,948,110 bytes
+    iPhone_Naoki: 1,948,110 bytes
+  2022-08-14/IMG_8070.JPG
+    iPhone_16_Naoki: 3,104,020 bytes
+    iPhone_Naoki: 3,104,020 bytes
+  2022-08-14/IMG_8064.JPG
+    iPhone_16_Naoki: 4,229,384 bytes
+    iPhone_Naoki: 4,229,384 bytes
+  2022-08-14/IMG_8053.JPG
+    iPhone_16_Naoki: 3,686,612 bytes
+    iPhone_Naoki: 3,686,612 bytes
+  2022-08-14/IMG_8067.JPG
+    iPhone_16_Naoki: 3,221,264 bytes
+    iPhone_Naoki: 3,221,264 bytes
+  2022-08-14/IMG_8066.JPG
+    iPhone_16_Naoki: 3,507,953 bytes
+    iPhone_Naoki: 3,507,953 bytes
+  2022-08-14/IMG_8063.JPG
+    iPhone_16_Naoki: 4,122,794 bytes
+    iPhone_Naoki: 4,122,794 bytes
+  2022-08-14/IMG_8065.JPG
+    iPhone_16_Naoki: 5,737,570 bytes
+    iPhone_Naoki: 5,737,570 bytes
+  2022-08-14/IMG_8058.JPG
+    iPhone_16_Naoki: 2,372,370 bytes
+    iPhone_Naoki: 2,372,370 bytes
+  2022-08-14/IMG_8052.JPG
+    iPhone_16_Naoki: 3,401,345 bytes
+    iPhone_Naoki: 3,401,345 bytes
+  2022-08-14/IMG_8062.JPG
+    iPhone_16_Naoki: 4,064,566 bytes
+    iPhone_Naoki: 4,064,566 bytes
+  2022-08-14/IMG_8061.JPG
+    iPhone_16_Naoki: 4,588,984 bytes
+    iPhone_Naoki: 4,588,984 bytes
+  2022-08-14/IMG_8060.JPG
+    iPhone_16_Naoki: 4,470,319 bytes
+    iPhone_Naoki: 4,470,319 bytes
+  2022-08-14/IMG_8059.JPG
+    iPhone_16_Naoki: 2,398,422 bytes
+    iPhone_Naoki: 2,398,422 bytes
+  2022-08-14/IMG_8051.JPG
+    iPhone_16_Naoki: 3,985,860 bytes
+    iPhone_Naoki: 3,985,860 bytes
+  2022-08-15/HBEN9442.JPG
+    iPhone_16_Naoki: 7,634,944 bytes
+    iPhone_Naoki: 7,634,944 bytes
+  2022-08-16/IMG_8078.JPG
+    iPhone_16_Naoki: 3,735,924 bytes
+    iPhone_Naoki: 3,735,924 bytes
+  2022-09-15/IMG_8157.JPG
+    iPhone_16_Naoki: 5,344,852 bytes
+    iPhone_Naoki: 5,344,852 bytes
+  2022-09-16/IMG_8163.JPG
+    iPhone_16_Naoki: 5,548,644 bytes
+    iPhone_Naoki: 5,548,644 bytes
+  2022-09-16/IMG_8165.JPG
+    iPhone_16_Naoki: 6,002,114 bytes
+    iPhone_Naoki: 6,002,114 bytes
+  2022-09-16/IMG_8166.JPG
+    iPhone_16_Naoki: 6,301,948 bytes
+    iPhone_Naoki: 6,301,948 bytes
+  2022-10-08/IMG_8197.JPG
+    iPhone_16_Naoki: 7,879,208 bytes
+    iPhone_Naoki: 7,879,208 bytes
+  2022-10-09/IMG_8205.JPG
+    iPhone_16_Naoki: 3,254,042 bytes
+    iPhone_Naoki: 3,254,042 bytes
+  2022-10-09/IMG_8207.JPG
+    iPhone_16_Naoki: 3,116,260 bytes
+    iPhone_Naoki: 3,116,260 bytes
+  ... 他 303 件
+
+【HEIC vs JPG 重複（HEIC優先で保持）】
+
+  2022-01-04/IMG_7328
+    HEIC: iPhone_16_Naoki\2022-01-04\IMG_7328.HEIC (1,066,214 bytes)
+    JPG:  iPhone_Naoki\2022-01-04\IMG_7328.JPG (3,198,642 bytes) → スキップ
+  2022-01-04/IMG_7326
+    HEIC: iPhone_16_Naoki\2022-01-04\IMG_7326.HEIC (2,959,106 bytes)
+    JPG:  iPhone_Naoki\2022-01-04\IMG_7326.JPG (5,918,212 bytes) → スキップ
+  2022-06-27/IMG_7815
+    HEIC: iPhone_16_Naoki\2022-06-27\IMG_7815.HEIC (1,868,359 bytes)
+    JPG:  iPhone_Naoki\2022-06-27\IMG_7815.JPG (4,297,225 bytes) → スキップ
+  2022-06-27/IMG_7816
+    HEIC: iPhone_16_Naoki\2022-06-27\IMG_7816.HEIC (2,539,468 bytes)
+    JPG:  iPhone_Naoki\2022-06-27\IMG_7816.JPG (5,078,936 bytes) → スキップ
+  2022-06-27/IMG_7814
+    HEIC: iPhone_16_Naoki\2022-06-27\IMG_7814.HEIC (1,716,885 bytes)
+    JPG:  iPhone_Naoki\2022-06-27\IMG_7814.JPG (3,948,835 bytes) → スキップ
+  2022-06-30/IMG_7836
+    HEIC: iPhone_16_Naoki\2022-06-30\IMG_7836.HEIC (1,496,295 bytes)
+    JPG:  iPhone_Naoki\2022-06-30\IMG_7836.JPG (3,441,478 bytes) → スキップ
+  2022-07-01/IMG_7845
+    HEIC: iPhone_16_Naoki\2022-07-01\IMG_7845.HEIC (1,346,291 bytes)
+    JPG:  iPhone_Naoki\2022-07-01\IMG_7845.JPG (3,096,469 bytes) → スキップ
+  2022-07-01/IMG_7848
+    HEIC: iPhone_16_Naoki\2022-07-01\IMG_7848.HEIC (2,151,522 bytes)
+    JPG:  iPhone_Naoki\2022-07-01\IMG_7848.JPG (4,303,044 bytes) → スキップ
+  2022-07-01/IMG_7846
+    HEIC: iPhone_16_Naoki\2022-07-01\IMG_7846.HEIC (1,535,312 bytes)
+    JPG:  iPhone_Naoki\2022-07-01\IMG_7846.JPG (3,531,217 bytes) → スキップ
+  2022-07-02/IMG_7851
+    HEIC: iPhone_16_Naoki\2022-07-02\IMG_7851.HEIC (1,621,352 bytes)
+    JPG:  iPhone_Naoki\2022-07-02\IMG_7851.JPG (3,729,109 bytes) → スキップ
+  2022-07-05/IMG_7895
+    HEIC: iPhone_16_Naoki\2022-07-05\IMG_7895.HEIC (1,833,899 bytes)
+    JPG:  iPhone_Naoki\2022-07-05\IMG_7895.JPG (4,217,967 bytes) → スキップ
+  2022-07-06/IMG_7903
+    HEIC: iPhone_16_Naoki\2022-07-06\IMG_7903.HEIC (1,255,863 bytes)
+    JPG:  iPhone_Naoki\2022-07-06\IMG_7903.JPG (2,888,484 bytes) → スキップ
+  2022-07-06/IMG_7905
+    HEIC: iPhone_16_Naoki\2022-07-06\IMG_7905.HEIC (3,072,427 bytes)
+    JPG:  iPhone_Naoki\2022-07-06\IMG_7905.JPG (6,144,854 bytes) → スキップ
+  2022-07-06/IMG_7907
+    HEIC: iPhone_16_Naoki\2022-07-06\IMG_7907.HEIC (2,407,650 bytes)
+    JPG:  iPhone_Naoki\2022-07-06\IMG_7907.JPG (4,815,300 bytes) → スキップ
+  2022-07-06/IMG_7908
+    HEIC: iPhone_16_Naoki\2022-07-06\IMG_7908.HEIC (2,611,179 bytes)
+    JPG:  iPhone_Naoki\2022-07-06\IMG_7908.JPG (5,222,358 bytes) → スキップ
+  2022-07-06/IMG_7902
+    HEIC: iPhone_16_Naoki\2022-07-06\IMG_7902.HEIC (1,231,550 bytes)
+    JPG:  iPhone_Naoki\2022-07-06\IMG_7902.JPG (2,832,565 bytes) → スキップ
+  2022-07-07/IMG_7912
+    HEIC: iPhone_16_Naoki\2022-07-07\IMG_7912.HEIC (3,168,722 bytes)
+    JPG:  iPhone_Naoki\2022-07-07\IMG_7912.JPG (6,337,444 bytes) → スキップ
+  2022-07-08/IMG_7917
+    HEIC: iPhone_16_Naoki\2022-07-08\IMG_7917.HEIC (2,363,779 bytes)
+    JPG:  iPhone_Naoki\2022-07-08\IMG_7917.JPG (4,727,558 bytes) → スキップ
+  2022-07-18/IMG_7961
+    HEIC: iPhone_16_Naoki\2022-07-18\IMG_7961.HEIC (1,892,071 bytes)
+    JPG:  iPhone_Naoki\2022-07-18\IMG_7961.JPG (4,351,763 bytes) → スキップ
+  2022-07-18/IMG_7962
+    HEIC: iPhone_16_Naoki\2022-07-18\IMG_7962.HEIC (767,120 bytes)
+    JPG:  iPhone_Naoki\2022-07-18\IMG_7962.JPG (2,301,360 bytes) → スキップ
+  2022-07-18/IMG_7960
+    HEIC: iPhone_16_Naoki\2022-07-18\IMG_7960.HEIC (1,549,694 bytes)
+    JPG:  iPhone_Naoki\2022-07-18\IMG_7960.JPG (3,564,296 bytes) → スキップ
+  2022-07-25/IMG_7978
+    HEIC: iPhone_16_Naoki\2022-07-25\IMG_7978.HEIC (965,834 bytes)
+    JPG:  iPhone_Naoki\2022-07-25\IMG_7978.JPG (2,897,502 bytes) → スキップ
+  2022-07-25/IMG_7979
+    HEIC: iPhone_16_Naoki\2022-07-25\IMG_7979.HEIC (938,172 bytes)
+    JPG:  iPhone_Naoki\2022-07-25\IMG_7979.JPG (2,814,516 bytes) → スキップ
+  2022-07-25/IMG_7980
+    HEIC: iPhone_16_Naoki\2022-07-25\IMG_7980.HEIC (2,215,869 bytes)
+    JPG:  iPhone_Naoki\2022-07-25\IMG_7980.JPG (4,431,738 bytes) → スキップ
+  2022-07-26/IMG_7981
+    HEIC: iPhone_16_Naoki\2022-07-26\IMG_7981.HEIC (2,419,585 bytes)
+    JPG:  iPhone_Naoki\2022-07-26\IMG_7981.JPG (4,839,170 bytes) → スキップ
+  2022-07-29/IMG_8003
+    HEIC: iPhone_16_Naoki\2022-07-29\IMG_8003.HEIC (1,856,229 bytes)
+    JPG:  iPhone_Naoki\2022-07-29\IMG_8003.JPG (4,269,326 bytes) → スキップ
+  2022-07-29/IMG_8007
+    HEIC: iPhone_16_Naoki\2022-07-29\IMG_8007.HEIC (2,529,011 bytes)
+    JPG:  iPhone_Naoki\2022-07-29\IMG_8007.JPG (5,058,022 bytes) → スキップ
+  2022-07-29/IMG_8008
+    HEIC: iPhone_16_Naoki\2022-07-29\IMG_8008.HEIC (2,609,552 bytes)
+    JPG:  iPhone_Naoki\2022-07-29\IMG_8008.JPG (5,219,104 bytes) → スキップ
+  2022-07-29/IMG_8006
+    HEIC: iPhone_16_Naoki\2022-07-29\IMG_8006.HEIC (2,983,309 bytes)
+    JPG:  iPhone_Naoki\2022-07-29\IMG_8006.JPG (5,966,618 bytes) → スキップ
+  2022-07-30/IMG_8018
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8018.HEIC (3,268,200 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8018.JPG (6,536,400 bytes) → スキップ
+  2022-07-30/IMG_8012
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8012.HEIC (1,585,358 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8012.JPG (3,646,323 bytes) → スキップ
+  2022-07-30/IMG_8014
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8014.HEIC (2,663,726 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8014.JPG (5,327,452 bytes) → スキップ
+  2022-07-30/IMG_8015
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8015.HEIC (2,634,806 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8015.JPG (5,269,612 bytes) → スキップ
+  2022-07-30/IMG_8021
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8021.HEIC (1,304,579 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8021.JPG (3,000,531 bytes) → スキップ
+  2022-07-30/IMG_8013
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8013.HEIC (2,378,726 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8013.JPG (4,757,452 bytes) → スキップ
+  2022-07-30/IMG_8010
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8010.HEIC (1,630,975 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8010.JPG (3,751,242 bytes) → スキップ
+  2022-07-30/IMG_8011
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8011.HEIC (1,615,579 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8011.JPG (3,715,831 bytes) → スキップ
+  2022-07-30/IMG_8016
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8016.HEIC (3,373,885 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8016.JPG (6,747,770 bytes) → スキップ
+  2022-07-30/IMG_8019
+    HEIC: iPhone_16_Naoki\2022-07-30\IMG_8019.HEIC (3,070,875 bytes)
+    JPG:  iPhone_Naoki\2022-07-30\IMG_8019.JPG (6,141,750 bytes) → スキップ
+  2022-08-06/IMG_8024
+    HEIC: iPhone_16_Naoki\2022-08-06\IMG_8024.HEIC (2,980,655 bytes)
+    JPG:  iPhone_Naoki\2022-08-06\IMG_8024.JPG (5,961,310 bytes) → スキップ
+  2022-08-06/IMG_8025
+    HEIC: iPhone_16_Naoki\2022-08-06\IMG_8025.HEIC (3,059,367 bytes)
+    JPG:  iPhone_Naoki\2022-08-06\IMG_8025.JPG (6,118,734 bytes) → スキップ
+  2022-08-11/IMG_8031
+    HEIC: iPhone_16_Naoki\2022-08-11\IMG_8031.HEIC (1,582,629 bytes)
+    JPG:  iPhone_Naoki\2022-08-11\IMG_8031.JPG (3,640,046 bytes) → スキップ
+  2022-08-11/IMG_8030
+    HEIC: iPhone_16_Naoki\2022-08-11\IMG_8030.HEIC (1,542,692 bytes)
+    JPG:  iPhone_Naoki\2022-08-11\IMG_8030.JPG (3,548,191 bytes) → スキップ
+  2022-08-20/IMG_8092
+    HEIC: iPhone_16_Naoki\2022-08-20\IMG_8092.HEIC (2,093,529 bytes)
+    JPG:  iPhone_Naoki\2022-08-20\IMG_8092.JPG (4,187,058 bytes) → スキップ
+  2022-08-20/IMG_8093
+    HEIC: iPhone_16_Naoki\2022-08-20\IMG_8093.HEIC (1,967,736 bytes)
+    JPG:  iPhone_Naoki\2022-08-20\IMG_8093.JPG (4,525,792 bytes) → スキップ
+  2022-08-21/IMG_8095
+    HEIC: iPhone_16_Naoki\2022-08-21\IMG_8095.HEIC (1,950,543 bytes)
+    JPG:  iPhone_Naoki\2022-08-21\IMG_8095.JPG (4,486,248 bytes) → スキップ
+  2022-08-21/IMG_8096
+    HEIC: iPhone_16_Naoki\2022-08-21\IMG_8096.HEIC (2,031,231 bytes)
+    JPG:  iPhone_Naoki\2022-08-21\IMG_8096.JPG (4,062,462 bytes) → スキップ
+  2022-09-04/IMG_8145
+    HEIC: iPhone_16_Naoki\2022-09-04\IMG_8145.HEIC (2,426,509 bytes)
+    JPG:  iPhone_Naoki\2022-09-04\IMG_8145.JPG (4,853,018 bytes) → スキップ
+  2022-09-04/IMG_8146
+    HEIC: iPhone_16_Naoki\2022-09-04\IMG_8146.HEIC (4,280,894 bytes)
+    JPG:  iPhone_Naoki\2022-09-04\IMG_8146.JPG (8,561,788 bytes) → スキップ
+  2022-09-13/IMG_8154
+    HEIC: iPhone_16_Naoki\2022-09-13\IMG_8154.HEIC (1,786,710 bytes)
+    JPG:  iPhone_Naoki\2022-09-13\IMG_8154.JPG (4,109,432 bytes) → スキップ
+  ... 他 676 件
+
+【日付フォルダごとの重複数】
+
+  2022-01-04: 2 件の重複
+  2022-06-27: 3 件の重複
+  2022-06-30: 1 件の重複
+  2022-07-01: 3 件の重複
+  2022-07-02: 1 件の重複
+  2022-07-05: 1 件の重複
+  2022-07-06: 5 件の重複
+  2022-07-07: 1 件の重複
+  2022-07-08: 1 件の重複
+  2022-07-18: 3 件の重複
+  2022-07-25: 3 件の重複
+  2022-07-26: 1 件の重複
+  2022-07-29: 4 件の重複
+  2022-07-30: 10 件の重複
+  2022-08-06: 2 件の重複
+  2022-08-11: 2 件の重複
+  2022-08-20: 2 件の重複
+  2022-08-21: 2 件の重複
+  2022-09-04: 2 件の重複
+  2022-09-13: 1 件の重複
+  2022-09-19: 1 件の重複
+  2022-10-09: 1 件の重複
+  2022-12-03: 2 件の重複
+  2022-12-18: 4 件の重複
+  2023-01-03: 2 件の重複
+  2023-01-05: 1 件の重複
+  2023-01-09: 1 件の重複
+  2023-01-22: 9 件の重複
+  2023-07-29: 6 件の重複
+  2023-11-19: 33 件の重複
+  2023-12-03: 1 件の重複
+  2023-12-27: 9 件の重複
+  2024-01-07: 8 件の重複
+  2024-02-03: 8 件の重複
+  2024-02-04: 9 件の重複
+  2024-02-14: 3 件の重複
+  2024-02-23: 3 件の重複
+  2024-03-03: 12 件の重複
+  2024-03-10: 1 件の重複
+  2024-03-16: 2 件の重複
+  2024-03-17: 4 件の重複
+  2024-03-19: 5 件の重複
+  2024-03-20: 3 件の重複
+  2024-03-24: 1 件の重複
+  2024-04-01: 3 件の重複
+  2024-04-06: 12 件の重複
+  2024-04-07: 5 件の重複
+  2024-04-09: 1 件の重複
+  2024-04-11: 1 件の重複
+  2024-04-13: 2 件の重複
+  2024-04-27: 2 件の重複
+  2024-04-28: 1 件の重複
+  2024-04-29: 14 件の重複
+  2024-05-12: 3 件の重複
+  2024-05-15: 3 件の重複
+  2024-05-19: 4 件の重複
+  2024-05-25: 2 件の重複
+  2024-05-26: 4 件の重複
+  2024-05-27: 2 件の重複
+  2024-05-30: 8 件の重複
+  2024-06-04: 1 件の重複
+  2024-06-11: 2 件の重複
+  2024-06-15: 8 件の重複
+  2024-06-16: 2 件の重複
+  2024-06-30: 5 件の重複
+  2024-07-03: 1 件の重複
+  2024-07-06: 26 件の重複
+  2024-07-07: 7 件の重複
+  2024-07-14: 6 件の重複
+  2024-07-17: 2 件の重複
+  2024-08-04: 7 件の重複
+  2024-08-07: 4 件の重複
+  2024-08-09: 10 件の重複
+  2024-08-12: 4 件の重複
+  2024-08-16: 4 件の重複
+  2024-08-18: 4 件の重複
+  2024-09-03: 1 件の重複
+  2024-09-29: 4 件の重複
+  2024-10-17: 2 件の重複
+  2024-11-09: 2 件の重複
+  2024-11-10: 9 件の重複
+  2024-11-16: 2 件の重複
+  2024-11-17: 33 件の重複
+  2024-11-21: 2 件の重複
+  2024-11-23: 4 件の重複
+  2024-11-27: 1 件の重複
+  2024-12-01: 26 件の重複
+  2024-12-07: 2 件の重複
+  2024-12-14: 3 件の重複
+  2024-12-22: 8 件の重複
+  2024-12-24: 5 件の重複
+  2024-12-26: 9 件の重複
+  2024-12-29: 2 件の重複
+  2024-12-31: 8 件の重複
+  2025-01-02: 1 件の重複
+  2025-01-05: 1 件の重複
+  2025-01-10: 8 件の重複
+  2025-01-18: 3 件の重複
+  2025-01-19: 10 件の重複
+  2025-01-23: 4 件の重複
+  2025-01-24: 2 件の重複
+  2025-01-26: 10 件の重複
+  2025-02-01: 10 件の重複
+  2025-02-02: 1 件の重複
+  2025-02-05: 1 件の重複
+  2025-02-19: 5 件の重複
+  2025-02-21: 10 件の重複
+  2025-03-01: 4 件の重複
+  2025-03-04: 2 件の重複
+  2025-03-05: 3 件の重複
+  2025-03-15: 12 件の重複
+  2025-03-23: 36 件の重複
+  2025-03-24: 1 件の重複
+  2025-03-27: 3 件の重複
+  2025-04-01: 1 件の重複
+  2025-04-05: 18 件の重複
+  2025-04-06: 23 件の重複
+  2025-04-12: 5 件の重複
+  2025-04-19: 6 件の重複
+  2025-04-20: 6 件の重複
+  2025-04-26: 10 件の重複
+  2025-04-29: 38 件の重複
+  2025-05-05: 9 件の重複
+  2025-05-06: 6 件の重複
+  2025-05-09: 11 件の重複
+  2025-05-11: 4 件の重複

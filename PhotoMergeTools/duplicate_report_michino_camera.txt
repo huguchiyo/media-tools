@@ -1,0 +1,210 @@
+================================================================================
+iPhone写真フォルダ 重複分析レポート
+フォルダ1: iPhone_Michino
+フォルダ2: camera
+生成日時: 2026-01-04 23:34:42
+================================================================================
+
+【フォルダ統計】
+  iPhone_Michino: 3565 ファイル
+  camera: 35136 ファイル
+  日付フォルダ数: 2894
+
+【重複サマリー】
+  完全に同一ファイル（名前・拡張子・サイズ）: 1440 件
+  HEIC vs JPG の重複: 0 件
+  iPhone_Michino にのみ存在: 2074 ファイル
+  camera にのみ存在: 33042 ファイル
+
+【完全に同一ファイル（削除候補）】
+
+  2011-03-03/IMG_2563.JPG
+    iPhone_Michino: 1,026,052 bytes
+    camera: 1,026,052 bytes
+  2012-03-31/IMG_0104.JPG
+    iPhone_Michino: 121,487 bytes
+    camera: 121,487 bytes
+  2012-03-31/IMG_0106.JPG
+    iPhone_Michino: 99,450 bytes
+    camera: 99,450 bytes
+  2012-03-31/IMG_0105.JPG
+    iPhone_Michino: 98,533 bytes
+    camera: 98,533 bytes
+  2012-04-07/IMG_0118.JPG
+    iPhone_Michino: 2,213,365 bytes
+    camera: 2,213,365 bytes
+  2012-04-11/IMG_0166.JPG
+    iPhone_Michino: 2,285,655 bytes
+    camera: 2,285,655 bytes
+  2012-04-11/IMG_0174.JPG
+    iPhone_Michino: 3,879,796 bytes
+    camera: 3,879,796 bytes
+  2012-04-11/IMG_0137.JPG
+    iPhone_Michino: 2,697,723 bytes
+    camera: 2,697,723 bytes
+  2012-04-11/IMG_0156.JPG
+    iPhone_Michino: 2,356,798 bytes
+    camera: 2,356,798 bytes
+  2012-04-11/IMG_0151.JPG
+    iPhone_Michino: 3,743,756 bytes
+    camera: 3,743,756 bytes
+  2012-04-11/IMG_0201.JPG
+    iPhone_Michino: 1,968,746 bytes
+    camera: 1,968,746 bytes
+  2012-04-11/IMG_0190.JPG
+    iPhone_Michino: 4,002,501 bytes
+    camera: 4,002,501 bytes
+  2012-04-11/IMG_0216.JPG
+    iPhone_Michino: 2,633,247 bytes
+    camera: 2,633,247 bytes
+  2012-04-11/IMG_0194.JPG
+    iPhone_Michino: 2,629,561 bytes
+    camera: 2,629,561 bytes
+  2012-04-11/IMG_0135.JPG
+    iPhone_Michino: 2,282,246 bytes
+    camera: 2,282,246 bytes
+  2012-04-11/IMG_0205.JPG
+    iPhone_Michino: 2,681,071 bytes
+    camera: 2,681,071 bytes
+  2012-04-11/IMG_0217.JPG
+    iPhone_Michino: 2,949,073 bytes
+    camera: 2,949,073 bytes
+  2012-04-11/IMG_0187.JPG
+    iPhone_Michino: 2,413,968 bytes
+    camera: 2,413,968 bytes
+  2012-04-11/IMG_0163.JPG
+    iPhone_Michino: 2,546,018 bytes
+    camera: 2,546,018 bytes
+  2012-04-11/IMG_0131.JPG
+    iPhone_Michino: 3,211,709 bytes
+    camera: 3,211,709 bytes
+  2012-04-11/IMG_0148.JPG
+    iPhone_Michino: 3,491,660 bytes
+    camera: 3,491,660 bytes
+  2012-04-11/IMG_0198.JPG
+    iPhone_Michino: 2,224,382 bytes
+    camera: 2,224,382 bytes
+  2012-04-11/IMG_0189.JPG
+    iPhone_Michino: 3,617,660 bytes
+    camera: 3,617,660 bytes
+  2012-04-11/IMG_0139.JPG
+    iPhone_Michino: 2,099,656 bytes
+    camera: 2,099,656 bytes
+  2012-04-11/IMG_0197.JPG
+    iPhone_Michino: 2,098,998 bytes
+    camera: 2,098,998 bytes
+  2012-04-11/IMG_0213.JPG
+    iPhone_Michino: 1,860,760 bytes
+    camera: 1,860,760 bytes
+  2012-04-11/IMG_0204.JPG
+    iPhone_Michino: 2,170,962 bytes
+    camera: 2,170,962 bytes
+  2012-04-11/IMG_0200.JPG
+    iPhone_Michino: 2,031,414 bytes
+    camera: 2,031,414 bytes
+  2012-04-11/IMG_0149.JPG
+    iPhone_Michino: 3,007,027 bytes
+    camera: 3,007,027 bytes
+  2012-04-11/IMG_0129.JPG
+    iPhone_Michino: 3,434,513 bytes
+    camera: 3,434,513 bytes
+  2012-04-11/IMG_0128.JPG
+    iPhone_Michino: 2,664,237 bytes
+    camera: 2,664,237 bytes
+  2012-04-11/IMG_0150.JPG
+    iPhone_Michino: 2,607,406 bytes
+    camera: 2,607,406 bytes
+  2012-04-11/IMG_0121.JPG
+    iPhone_Michino: 4,259,831 bytes
+    camera: 4,259,831 bytes
+  2012-04-11/IMG_0165.JPG
+    iPhone_Michino: 2,138,153 bytes
+    camera: 2,138,153 bytes
+  2012-04-11/IMG_0195.JPG
+    iPhone_Michino: 2,457,985 bytes
+    camera: 2,457,985 bytes
+  2012-04-11/IMG_0125.JPG
+    iPhone_Michino: 2,771,938 bytes
+    camera: 2,771,938 bytes
+  2012-04-11/IMG_0132.JPG
+    iPhone_Michino: 2,375,859 bytes
+    camera: 2,375,859 bytes
+  2012-04-11/IMG_0154.JPG
+    iPhone_Michino: 2,420,927 bytes
+    camera: 2,420,927 bytes
+  2012-04-11/IMG_0188.JPG
+    iPhone_Michino: 2,429,696 bytes
+    camera: 2,429,696 bytes
+  2012-04-11/IMG_0192.JPG
+    iPhone_Michino: 1,971,915 bytes
+    camera: 1,971,915 bytes
+  2012-04-11/IMG_0127.JPG
+    iPhone_Michino: 2,671,337 bytes
+    camera: 2,671,337 bytes
+  2012-04-11/IMG_0153.JPG
+    iPhone_Michino: 2,270,089 bytes
+    camera: 2,270,089 bytes
+  2012-04-11/IMG_0147.JPG
+    iPhone_Michino: 2,958,836 bytes
+    camera: 2,958,836 bytes
+  2012-04-11/IMG_0181.JPG
+    iPhone_Michino: 1,718,841 bytes
+    camera: 1,718,841 bytes
+  2012-04-11/IMG_0120.JPG
+    iPhone_Michino: 2,842,991 bytes
+    camera: 2,842,991 bytes
+  2012-04-11/IMG_0134.JPG
+    iPhone_Michino: 3,338,176 bytes
+    camera: 3,338,176 bytes
+  2012-04-11/IMG_0136.JPG
+    iPhone_Michino: 2,675,877 bytes
+    camera: 2,675,877 bytes
+  2012-04-11/IMG_0180.JPG
+    iPhone_Michino: 1,924,183 bytes
+    camera: 1,924,183 bytes
+  2012-04-11/IMG_0172.JPG
+    iPhone_Michino: 2,331,365 bytes
+    camera: 2,331,365 bytes
+  2012-04-11/IMG_0159.JPG
+    iPhone_Michino: 1,976,439 bytes
+    camera: 1,976,439 bytes
+  ... 他 1390 件
+
+【日付フォルダごとの重複数】
+
+  2012-04-12: 1 件の重複
+  2022-03-29: 2 件の重複
+  2022-06-05: 1 件の重複
+  2022-06-08: 3 件の重複
+  2022-06-27: 1 件の重複
+  2022-06-28: 1 件の重複
+  2022-07-10: 4 件の重複
+  2022-07-12: 1 件の重複
+  2022-07-15: 1 件の重複
+  2022-07-23: 1 件の重複
+  2022-08-07: 1 件の重複
+  2022-08-28: 1 件の重複
+  2022-09-01: 1 件の重複
+  2022-09-16: 1 件の重複
+  2022-10-04: 1 件の重複
+  2022-10-10: 1 件の重複
+  2022-10-18: 1 件の重複
+  2022-10-31: 2 件の重複
+  2022-11-01: 1 件の重複
+  2022-11-22: 2 件の重複
+  2022-12-28: 1 件の重複
+  2023-02-05: 1 件の重複
+  2023-02-09: 1 件の重複
+  2023-03-14: 1 件の重複
+  2023-04-02: 1 件の重複
+  2023-04-23: 2 件の重複
+  2023-07-31: 1 件の重複
+  2023-08-07: 1 件の重複
+  2023-09-26: 1 件の重複
+  2023-11-01: 1 件の重複
+  2023-11-10: 1 件の重複
+  2023-11-11: 1 件の重複
+  2023-11-14: 1 件の重複
+  2023-11-24: 1 件の重複
+  2023-12-03: 1 件の重複
+  2023-12-26: 1 件の重複

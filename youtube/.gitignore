@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# OAuth2認証情報（機密情報）
+*-oauth2.json
+
+# ログファイル
+logs/*.log
+*.log
+
+# 設定ファイル（機密情報を含む可能性）
+client_secrets*.json
+config.json
+
+# バックアップファイル
+*.backup
+*.bak
+
+# 一時ファイル
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# テスト関連
+.pytest_cache/
+.coverage
+htmlcov/
+
+# プレビュー出力（preview_upload_targets.py --output で任意生成、読み取り未使用）
+data/upload_targets*.txt
