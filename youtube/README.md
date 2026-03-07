@@ -22,6 +22,7 @@ Tools/youtube/
 │   ├── check_playlist_membership.py
 │   ├── check_unuploaded_videos.py
 │   ├── check_should_upload.py
+│   ├── parse_upload_log.py       # ログから直近実行の詳細を取得（UI表示用）
 │   └── delete_video.py
 │
 ├── tests/                      # テストスクリプト
@@ -93,6 +94,9 @@ python utils/check_playlist_membership.py --fix
 
 # アップロードすべき動画の確認
 python utils/check_should_upload.py
+
+# 直近のアップロード実行の詳細をログから取得（JSON出力・UIでの詳細表示用）
+python utils/parse_upload_log.py
 ```
 
 ### 403 Insufficient Permission が出たとき（認証スコープ不足）

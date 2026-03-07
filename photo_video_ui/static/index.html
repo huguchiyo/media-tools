@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写真・動画ツール</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --card: #16213e;
+      --accent: #0f3460;
+      --text: #e8e8e8;
+      --muted: #a0a0a0;
+      --success: #4ade80;
+      --warn: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1.5rem 2rem;
+      line-height: 1.5;
+    }
+    .header { margin-bottom: 1rem; }
+    h1 { font-size: 1.5rem; margin: 0; color: var(--text); }
+    h2 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem 0; padding-bottom: 0.35rem; border-bottom: 1px solid var(--accent); color: var(--text); }
+    h2:first-of-type { margin-top: 0; }
+    section { background: var(--card); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    label { display: block; margin-bottom: 0.25rem; color: var(--muted); font-size: 0.9rem; }
+    input[type="text"] {
+      width: 100%; max-width: 520px; padding: 0.5rem;
+      background: var(--accent); border: 1px solid #2a4a6a; border-radius: 4px; color: var(--text); font-size: 0.9rem;
+    }
+    select {
+      padding: 0.5rem; background: var(--accent); border: 1px solid #2a4a6a; border-radius: 4px;
+      color: var(--text); font-size: 0.9rem; min-width: 200px;
+    }
+    .row { margin-bottom: 0.75rem; }
+    .row-cols { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; align-items: flex-start; }
+    .row-cols .row { flex: 1 1 220px; min-width: 200px; max-width: 400px; margin-bottom: 0; }
+    .path-with-browse { display: flex; gap: 0.5rem; align-items: center; }
+    .path-with-browse input { flex: 1; min-width: 0; }
+    .path-with-browse .btn-browse { flex-shrink: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+    input.readonly-display { cursor: default; opacity: 0.95; }
+    .btn {
+      padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.9rem;
+      cursor: pointer; margin-right: 0.5rem; margin-top: 0.25rem;
+    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: var(--accent); color: var(--text); }
+    .btn-secondary:hover { background: #2a4a6a; }
+    .result-box { margin-top: 1rem; padding: 1rem; background: var(--accent); border-radius: 6px; font-size: 0.9rem; display: none; }
+    .result-box.visible { display: block; }
+    .result-box h3 { font-size: 0.95rem; margin: 0 0 0.5rem 0; color: var(--text); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid #2a4a6a; }
+    th { color: var(--muted); font-weight: 600; }
+    .summary-line { margin-bottom: 0.35rem; }
+    .summary-line strong { color: var(--muted); margin-right: 0.5rem; }
+    .result-detail { border-top: 1px solid #2a4a6a; padding-top: 0.75rem; }
+    .detail-block { margin-bottom: 0.75rem; }
+    .detail-title { display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem; }
+    .detail-list { margin: 0; padding-left: 1.25rem; font-size: 0.85rem; max-height: 12rem; overflow-y: auto; }
+    .detail-list li { margin-bottom: 0.2rem; }
+    .log-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .log-modal-overlay.visible { display: flex; }
+    .log-modal-dialog { background: var(--card); border-radius: 10px; max-width: 640px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .log-modal-title { padding: 1rem 1.25rem; border-bottom: 1px solid var(--accent); font-size: 1rem; color: var(--text); }
+    .log-modal-body { padding: 1rem 1.25rem; overflow: hidden; flex: 1; min-height: 200px; }
+    .log-modal-log { font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem; background: #0d1117; color: #e6edf3; padding: 0.75rem 1rem; border-radius: 6px; height: 280px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+    .log-modal-log .log-line { margin-bottom: 0.2rem; }
+    .log-modal-log .log-line.error { color: #f85149; }
+    .log-modal-log .log-line.warn { color: var(--warn); }
+    .log-modal-footer { padding: 0.75rem 1.25rem; border-top: 1px solid var(--accent); display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .log-modal-footer .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>写真・動画ツール</h1>
+  </div>
+
+  <section>
+    <h2>1. 写真と動画の分離</h2>
+    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.75rem;">指定フォルダ内の動画を movie フォルダへ移動・リネームします。写真はそのまま残ります。</p>
+    <div class="row-cols">
+      <div class="row">
+        <label>ソース</label>
+        <div class="path-with-browse">
+          <input type="text" id="sepSource" value="" readonly class="readonly-display" />
+          <button type="button" class="btn btn-secondary btn-browse" id="browseSource" title="フォルダを選択">参照</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>移動先</label>
+        <div class="path-with-browse">
+          <input type="text" id="sepTarget" value="" readonly class="readonly-display" />
+          <button type="button" class="btn btn-secondary btn-browse" id="browseTarget" title="フォルダを選択">参照</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <button type="button" class="btn btn-primary" onclick="runSeparate(true);">分離を実行（確認ダイアログあり）</button>
+      <button type="button" class="btn btn-secondary" onclick="runSeparate(false);">確認なしで実行</button>
+      <button type="button" class="btn btn-secondary" onclick="runSeparatePreview();">プレビュー（ドライラン）</button>
+    </div>
+    <div id="moveResult" class="result-box">
+      <h3>分離結果</h3>
+      <div class="summary-line"><strong>実行日時</strong> <span id="moveResultDate">—</span></div>
+      <div class="summary-line"><strong>ソース</strong> <span id="moveResultSource">—</span></div>
+      <div class="summary-line"><strong>移動先</strong> <span id="moveResultTarget">—</span></div>
+      <div class="summary-line"><strong>移動数</strong> <span id="moveResultCount">—</span> 件</div>
+      <table>
+        <thead><tr><th>移動元</th><th>移動先（年/ファイル名）</th><th>年</th></tr></thead>
+        <tbody id="moveResultTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. 動画のアップロード</h2>
+    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">movie 直下のフォルダを1つ選んで、YouTube にアップロードします。</p>
+    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem;">初回や「invalid_grant」「403 Insufficient Permission」が出た場合は、先に<strong>YouTube 認証を行う</strong>を実行してください。ブラウザで Google にログインし、<strong>「許可」でアップロード権限を付与</strong>するとアップロードできるようになります。</p>
+    <div style="margin-bottom: 0.75rem;">
+      <button type="button" class="btn btn-secondary" id="btnYoutubeAuth">YouTube 認証を行う</button>
+    </div>
+    <div class="row">
+      <label>アップロードするフォルダ（1つ）</label>
+      <select id="uploadFolder"><option value="">— 選択 —</option></select>
+    </div>
+    <div>
+      <button type="button" class="btn btn-primary" onclick="runUpload();">アップロード実行</button>
+      <button type="button" class="btn btn-secondary" onclick="runUploadDryRun();">ドライラン（実際にはアップロードしない）</button>
+    </div>
+    <div id="uploadResult" class="result-box">
+      <h3>アップロード結果</h3>
+      <div class="summary-line"><strong>実行日時</strong> <span id="uploadResultDate">—</span></div>
+      <div class="summary-line"><strong>対象フォルダ</strong> <span id="uploadResultDir">—</span></div>
+      <div class="summary-line"><strong>年</strong> <span id="uploadResultYear">—</span></div>
+      <div class="summary-line"><strong>成功</strong> <span id="uploadResultSuccess">—</span> / <strong>失敗</strong> <span id="uploadResultFailed">—</span> / <strong>スキップ</strong> <span id="uploadResultSkipped">—</span> / <strong>プレイリスト追加</strong> <span id="uploadResultPlaylist">—</span></div>
+      <div class="result-detail" style="margin-top: 1rem;">
+        <div class="detail-block" id="uploadDetailUploaded" style="display: none;"><strong class="detail-title">アップロードした動画</strong><ul id="uploadListUploaded" class="detail-list"></ul></div>
+        <div class="detail-block" id="uploadDetailSkipped" style="display: none;"><strong class="detail-title">スキップした動画（既にアップロード済み）</strong><ul id="uploadListSkipped" class="detail-list"></ul></div>
+        <div class="detail-block" id="uploadDetailFailed" style="display: none;"><strong class="detail-title">失敗した動画</strong><ul id="uploadListFailed" class="detail-list"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="logModal" class="log-modal-overlay" aria-hidden="true">
+    <div class="log-modal-dialog">
+      <div class="log-modal-title" id="logModalTitle">実行中...</div>
+      <div class="log-modal-body"><pre class="log-modal-log" id="logModalLog"></pre></div>
+      <div class="log-modal-footer"><button type="button" class="btn btn-secondary" id="logModalClose">閉じる</button></div>
+    </div>
+  </div>
+
+  <script>
+    var API = '';
+    var logModalEl = document.getElementById('logModal');
+    var logModalLogEl = document.getElementById('logModalLog');
+    var logModalCloseBtn = document.getElementById('logModalClose');
+
+    function loadSettings() {
+      fetch(API + '/api/settings').then(function(r) { return r.json(); }).then(function(s) {
+        document.getElementById('sepSource').value = s.pathCamera || '';
+        document.getElementById('sepTarget').value = s.pathMovie || '';
+      }).catch(function() {});
+    }
+
+    function loadMovieFolders() {
+      fetch(API + '/api/movie-folders').then(function(r) { return r.json(); }).then(function(data) {
+        var sel = document.getElementById('uploadFolder');
+        sel.innerHTML = '<option value="">— 選択 —</option>';
+        (data.folders || []).forEach(function(f) {
+          var opt = document.createElement('option');
+          opt.value = f;
+          opt.textContent = 'movie/' + f;
+          sel.appendChild(opt);
+        });
+      }).catch(function() {});
+    }
+
+    function openFolderPicker(isSource, callback) {
+      var input = document.getElementById(isSource ? 'sepSource' : 'sepTarget');
+      fetch(API + '/api/folder-picker', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initialPath: input.value })
+      }).then(function(r) { return r.json(); }).then(function(res) {
+        if (res.ok && res.path) {
+          input.value = res.path;
+          fetch(API + '/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(isSource ? { pathCamera: res.path } : { pathMovie: res.path })
+          }).then(function() {
+            if (!isSource) loadMovieFolders();
+            if (callback) callback();
+          });
+        }
+      }).catch(function() { alert('フォルダの取得に失敗しました。'); });
+    }
+    document.getElementById('browseSource').addEventListener('click', function() { openFolderPicker(true); });
+    document.getElementById('browseTarget').addEventListener('click', function() { openFolderPicker(false); });
+
+    function openLogModal(title) {
+      document.getElementById('logModalTitle').textContent = title;
+      logModalLogEl.innerHTML = '';
+      logModalCloseBtn.disabled = false;
+      logModalEl.classList.add('visible');
+      logModalEl.setAttribute('aria-hidden', 'false');
+    }
+    function appendLogLine(text, type) {
+      type = type || 'info';
+      var line = document.createElement('span');
+      line.className = 'log-line ' + type;
+      line.textContent = text;
+      logModalLogEl.appendChild(line);
+      logModalLogEl.appendChild(document.createTextNode('\n'));
+      logModalLogEl.scrollTop = logModalLogEl.scrollHeight;
+    }
+    function closeLogModal() {
+      logModalEl.classList.remove('visible');
+      logModalEl.setAttribute('aria-hidden', 'true');
+    }
+    logModalCloseBtn.addEventListener('click', closeLogModal);
+
+    function readSSEStream(response, onLine, onDone) {
+      var reader = response.body.getReader();
+      var buffer = '';
+      function read() {
+        reader.read().then(function(chunk) {
+          if (chunk.done) {
+            if (onDone) onDone();
+            return;
+          }
+          buffer += new TextDecoder().decode(chunk.value);
+          var parts = buffer.split('\n\n');
+          buffer = parts.pop() || '';
+          parts.forEach(function(block) {
+            var m = block.match(/^data:\s*(.+)/m);
+            if (m) {
+              try {
+                var obj = JSON.parse(m[1]);
+                if (obj.line !== undefined) onLine(obj.line);
+                if (obj.done && onDone) onDone();
+              } catch (e) {}
+            }
+          });
+          read();
+        }).catch(function() { if (onDone) onDone(); });
+      }
+      read();
+    }
+
+    function runSeparate(confirm) {
+      if (confirm && !window.confirm('分離を実行します。よろしいですか？')) return;
+      var source = document.getElementById('sepSource').value.trim();
+      var target = document.getElementById('sepTarget').value.trim();
+      openLogModal('実行中 — 写真と動画の分離');
+      fetch(API + '/api/separate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: source, target: target, noConfirm: !confirm })
+      }).then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
+        readSSEStream(r, appendLogLine, function() {
+          logModalCloseBtn.disabled = false;
+          fetch(API + '/api/separate/result').then(function(res) { return res.json(); }).then(function(data) {
+            if (data.ok && data.result) showMoveResult(false, data.result);
+          });
+        });
+      }).catch(function(e) {
+        appendLogLine('エラー: ' + (e.message || e));
+        logModalCloseBtn.disabled = false;
+      });
+    }
+
+    function runSeparatePreview() {
+      var source = document.getElementById('sepSource').value.trim();
+      var target = document.getElementById('sepTarget').value.trim();
+      openLogModal('プレビュー（ドライラン） — 写真と動画の分離');
+      fetch(API + '/api/separate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: source, target: target, dryRun: true })
+      }).then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
+        readSSEStream(r, appendLogLine, function() {
+          logModalCloseBtn.disabled = false;
+          fetch(API + '/api/separate/result').then(function(res) { return res.json(); }).then(function(data) {
+            if (data.ok && data.result) showMoveResult(true, data.result);
+          });
+        });
+      }).catch(function(e) {
+        appendLogLine('エラー: ' + (e.message || e));
+        logModalCloseBtn.disabled = false;
+      });
+    }
+
+    function showMoveResult(isPreview, r) {
+      document.getElementById('moveResult').querySelector('h3').textContent = isPreview ? '分離プレビュー（ドライラン）' : '分離結果';
+      if (!r) return;
+      document.getElementById('moveResultDate').textContent = r.date || '—';
+      document.getElementById('moveResultSource').textContent = r.source || '—';
+      document.getElementById('moveResultTarget').textContent = r.target || '—';
+      document.getElementById('moveResultCount').textContent = (r.count != null ? r.count : '—');
+      var tbody = document.getElementById('moveResultTableBody');
+      tbody.innerHTML = (r.rows || []).map(function(row) {
+        return '<tr><td>' + (row.from || '') + '</td><td>' + (row.to || '') + '</td><td>' + (row.year || '') + '</td></tr>';
+      }).join('');
+      document.getElementById('moveResult').classList.add('visible');
+    }
+
+    document.getElementById('btnYoutubeAuth').addEventListener('click', function() {
+      openLogModal('YouTube 認証');
+      fetch(API + '/api/youtube-auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
+        readSSEStream(r, appendLogLine, function() {
+          logModalCloseBtn.disabled = false;
+          appendLogLine('', 'info');
+          appendLogLine('認証が完了したら「閉じる」を押し、再度アップロードを実行してください。', 'info');
+        });
+      }).catch(function(e) {
+        appendLogLine('エラー: ' + (e.message || e));
+        logModalCloseBtn.disabled = false;
+      });
+    });
+
+    function runUpload() {
+      var folder = document.getElementById('uploadFolder').value;
+      if (!folder) { alert('フォルダを選択してください。'); return; }
+      if (!window.confirm('「movie/' + folder + '」をアップロードします。よろしいですか？')) return;
+      var moviePath = document.getElementById('sepTarget').value.trim();
+      var dir = moviePath ? moviePath.replace(/[\\/]+$/, '') + '/' + folder : folder;
+      openLogModal('実行中 — 動画のアップロード (movie/' + folder + ')');
+      fetch(API + '/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dir: dir, dryRun: false })
+      }).then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
+        readSSEStream(r, appendLogLine, function() {
+          logModalCloseBtn.disabled = false;
+          fetch(API + '/api/upload/result').then(function(res) { return res.json(); }).then(function(data) {
+            if (data.ok) showUploadResult(false, data);
+          });
+        });
+      }).catch(function(e) {
+        appendLogLine('エラー: ' + (e.message || e));
+        logModalCloseBtn.disabled = false;
+      });
+    }
+
+    function runUploadDryRun() {
+      var folder = document.getElementById('uploadFolder').value;
+      if (!folder) { alert('フォルダを選択してください。'); return; }
+      var moviePath = document.getElementById('sepTarget').value.trim();
+      var dir = moviePath ? moviePath.replace(/[\\/]+$/, '') + '/' + folder : folder;
+      openLogModal('実行中 — 動画のアップロード ドライラン (movie/' + folder + ')');
+      fetch(API + '/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dir: dir, dryRun: true })
+      }).then(function(r) {
+        if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
+        readSSEStream(r, appendLogLine, function() {
+          logModalCloseBtn.disabled = false;
+          fetch(API + '/api/upload/result').then(function(res) { return res.json(); }).then(function(data) {
+            if (data.ok) showUploadResult(true, data);
+          });
+        });
+      }).catch(function(e) {
+        appendLogLine('エラー: ' + (e.message || e));
+        logModalCloseBtn.disabled = false;
+      });
+    }
+
+    function showUploadResult(isDryRun, data) {
+      document.getElementById('uploadResult').querySelector('h3').textContent = isDryRun ? 'アップロード結果（ドライラン）' : 'アップロード結果';
+      var s = data.summary || {};
+      document.getElementById('uploadResultDate').textContent = s.date || '—';
+      document.getElementById('uploadResultDir').textContent = s.dir || '—';
+      document.getElementById('uploadResultYear').textContent = s.year || '—';
+      document.getElementById('uploadResultSuccess').textContent = s.success != null ? s.success : '—';
+      document.getElementById('uploadResultFailed').textContent = s.failed != null ? s.failed : '—';
+      document.getElementById('uploadResultSkipped').textContent = s.skipped != null ? s.skipped : '—';
+      document.getElementById('uploadResultPlaylist').textContent = s.playlist != null ? s.playlist : '—';
+      var uploaded = data.uploaded || [];
+      var skippedList = data.skipped_list || [];
+      var failedList = data.failed_list || [];
+      var ulUploaded = document.getElementById('uploadListUploaded');
+      var ulSkipped = document.getElementById('uploadListSkipped');
+      var ulFailed = document.getElementById('uploadListFailed');
+      ulUploaded.innerHTML = '';
+      ulSkipped.innerHTML = '';
+      ulFailed.innerHTML = '';
+      if (uploaded.length > 0) {
+        document.getElementById('uploadDetailUploaded').style.display = 'block';
+        uploaded.forEach(function(item) {
+          var li = document.createElement('li');
+          li.textContent = (item.title || '') + (item.video_id ? ' (ID: ' + item.video_id + ')' : '');
+          ulUploaded.appendChild(li);
+        });
+      } else document.getElementById('uploadDetailUploaded').style.display = 'none';
+      if (skippedList.length > 0) {
+        document.getElementById('uploadDetailSkipped').style.display = 'block';
+        skippedList.forEach(function(t) {
+          var li = document.createElement('li');
+          li.textContent = typeof t === 'string' ? t : (t.title || '');
+          ulSkipped.appendChild(li);
+        });
+      } else document.getElementById('uploadDetailSkipped').style.display = 'none';
+      if (failedList.length > 0) {
+        document.getElementById('uploadDetailFailed').style.display = 'block';
+        failedList.forEach(function(item) {
+          var li = document.createElement('li');
+          li.textContent = (item.title || '') + (item.error ? ' — ' + item.error : '');
+          ulFailed.appendChild(li);
+        });
+      } else document.getElementById('uploadDetailFailed').style.display = 'none';
+      document.getElementById('uploadResult').classList.add('visible');
+    }
+
+    loadSettings();
+    loadMovieFolders();
+  </script>
+</body>
+</html>

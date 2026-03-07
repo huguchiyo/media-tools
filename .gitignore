@@ -24,8 +24,10 @@ youtube/data/uploaded_list.json
 youtube/data/uploaded_list.txt
 youtube/data/unuploaded_videos.json
 youtube/data/playlist_additions_log.json
+youtube/data/dryrun_summary*.md
 VideoMoveTools/moved_videos_log.json
 VideoMoveTools/moved_videos_log.md
+photo_video_ui/data/
 
 # バックアップ・一時
 *.backup
@@ -48,3 +50,8 @@ htmlcov/
 
 # プレビュー出力（任意生成）
 youtube/data/upload_targets*.txt
+
+# PhotoMergeTools の実行レポート・個人メモ（環境ごと）
+PhotoMergeTools/duplicate_report*.txt
+PhotoMergeTools/merge_verification_report.txt
+PhotoMergeTools/インポートメモ.txt

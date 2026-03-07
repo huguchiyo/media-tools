@@ -64,3 +64,25 @@ python workflow.py --years 2024 2025
 - **movie**: 動画のみリネーム後に年ごとに格納するフォルダ（`movie/2024/`, `movie/2025/` など）。
 
 移動先ベースは VideoMoveTools のデフォルト（`movie`）または `--target` で指定。アップロード時は `--movie-dir`（既定で同じ movie パス）でスキャンし、未アップロード判定に `uploaded_from_youtube.txt` を使います。
+
+---
+
+## UI で使う（写真・動画ツール）
+
+分離・アップロードをブラウザから実行する場合は **[photo_video_ui](photo_video_ui/README.md)** を参照。`start_server.bat` のダブルクリックで起動できます。
+
+---
+
+## GitHub にアップするとき／クローン後のセットアップ
+
+- **コミットしないもの**（`.gitignore` で除外済み）  
+  - 認証: `youtube/client_secrets.json`, `youtube/config.json`, `youtube/*-oauth2.json`  
+  - ログ: `youtube/logs/*.log`  
+  - 実行結果・個人データ: `youtube/data/uploaded_*.txt`, `upload_runs.*`, `VideoMoveTools/moved_videos_log.*`, `photo_video_ui/data/`  
+  - バックアップ: `*.backup`, `*.bak`
+
+- **クローン後にやること**  
+  1. `youtube/config.json.example` をコピーして `youtube/config.json` を作成し、必要ならパス等を編集。  
+  2. [Google API Console](https://console.cloud.google.com/) で OAuth 2.0 クライアントを作成し、`youtube/client_secrets.json` を配置。  
+  3. `pip install -r photo_video_ui/requirements.txt`（UI を使う場合）。  
+  4. 初回のアップロードまたは UI の「YouTube 認証を行う」でブラウザからログインし、トークンを発行する。
