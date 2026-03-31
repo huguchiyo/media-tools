@@ -127,11 +127,28 @@ def upload_dir_movies(
     paths.ensure_data_dir()
     uploaded_from_youtube_path = paths.UPLOADED_FROM_YOUTUBE_PATH
 
+    # fetch失敗時の安全策として、既存ローカル一覧を先に保持しておく
+    local_uploaded_titles = set()
+    if uploaded_from_youtube_path.exists():
+        with open(uploaded_from_youtube_path, 'r', encoding='utf-8') as f:
+            local_uploaded_titles = {line.strip() for line in f if line.strip()}
+
     if fetch_uploaded_list:
         logger.info("Fetching uploaded video list from YouTube API...")
         try:
             videos = youtube_list.get_upload_titles(youtube=youtube_admin)
             uploaded_titles = {v['snippet']['title'] for v in videos}
+            # API取得結果が空で、かつローカルに実績がある場合は異常とみなして中断する
+            if not uploaded_titles and local_uploaded_titles:
+                logger.error(
+                    "Fetched uploaded list is empty while local list has entries. "
+                    "Aborting to avoid accidental duplicate uploads."
+                )
+                logger.error(
+                    f"Local list: {uploaded_from_youtube_path} ({len(local_uploaded_titles)} titles)"
+                )
+                logger.error("Use --no-fetch-list temporarily and retry API list fetch later.")
+                return {'success': 0, 'failed': 0, 'skipped': 0}
             logger.info(f"Got {len(uploaded_titles)} uploaded video(s) from YouTube API")
             with open(uploaded_from_youtube_path, 'w', encoding='utf-8') as f:
                 for t in sorted(uploaded_titles):

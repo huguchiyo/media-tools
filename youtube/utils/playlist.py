@@ -122,6 +122,23 @@ def sort_playlist_by_date(playlist_id: str, youtube: build) -> None:
     """
     try:
         playlist_items = youtube_list.get_playlist_items(playlist_id, youtube)
+
+        # 先に「Deleted video」項目をクリーンアップする
+        deleted_items = [
+            item for item in playlist_items
+            if item.get("snippet", {}).get("title", "") == "Deleted video"
+        ]
+        if deleted_items:
+            removed_deleted = 0
+            for item in deleted_items:
+                if youtube_list.delete_playlist_item(item["id"], youtube):
+                    removed_deleted += 1
+            logger.info(
+                f"Removed {removed_deleted}/{len(deleted_items)} deleted-video item(s) "
+                f"from playlist {playlist_id} before sorting"
+            )
+            # プレイリスト内容が変わったので再取得してからソートする
+            playlist_items = youtube_list.get_playlist_items(playlist_id, youtube)
         
         # タイトルから撮影日を抽出してソート
         def extract_date_from_title(title: str) -> tuple:
@@ -154,6 +171,7 @@ def sort_playlist_by_date(playlist_id: str, youtube: build) -> None:
         to_move.sort(key=lambda x: x[0], reverse=True)
         done_moves = []  # (prev_curr, prev_target) のリスト
         actually_moved = 0
+        failed_updates = 0
         for curr, target_pos, item in to_move:
             # 既に行った更新でこのアイテムがずれた後の「実質の現在位置」
             effective_curr = curr
@@ -163,12 +181,25 @@ def sort_playlist_by_date(playlist_id: str, youtube: build) -> None:
             if effective_curr == target_pos:
                 continue  # もう正しい位置にあるのでスキップ
             item['snippet']['position'] = target_pos
-            youtube_list.update_playlist_item(item, youtube)
+            updated = youtube_list.update_playlist_item(item, youtube)
+            if not updated:
+                failed_updates += 1
+                logger.warning(
+                    "Stopping playlist sort early due to update failure "
+                    f"(playlist={playlist_id}, title={item['snippet'].get('title', '')}, "
+                    f"target_pos={target_pos})"
+                )
+                break
             done_moves.append((curr, target_pos))
             actually_moved += 1
         logger.info(f"Sorting playlist {playlist_id}: moved {actually_moved} item(s) to correct position")
-        if actually_moved > 0:
+        if failed_updates == 0 and actually_moved > 0:
             logger.info(f"Playlist sorted successfully")
+        elif failed_updates > 0:
+            logger.warning(
+                "Playlist sort ended with failures. "
+                "Order may be partially updated; retry later when quota/error is resolved."
+            )
             
     except Exception as e:
         logger.error(f"An error occurred while sorting playlist: {e}")
