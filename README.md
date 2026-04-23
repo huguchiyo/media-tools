@@ -87,3 +87,96 @@ python workflow.py --years 2024 2025
   2. [Google API Console](https://console.cloud.google.com/) で OAuth 2.0 クライアントを作成し、`youtube/client_secrets.json` を配置。  
   3. `pip install -r photo_video_ui/requirements.txt`（UI を使う場合）。  
   4. 初回のアップロードまたは UI の「YouTube 認証を行う」でブラウザからログインし、トークンを発行する。
+
+## Cursor / AI を使って YouTube Upload まで進める
+
+このリポジトリは、Cursor などで AI に README を読ませながら進めるとセットアップしやすい構成です。  
+初見の人は、次の順番で AI に確認させながら進めると、YouTube へのアップロードまで到達しやすくなります。
+
+### 1. リポジトリをクローンしてセットアップする
+
+1. このリポジトリをクローンする。  
+2. Cursor でリポジトリを開く。  
+3. AI に **`README.md`**, **`photo_video_ui/README.md`**, **`youtube/README.md`** を読ませて、「YouTube アップロードまでに必要な作業を順番に教えて」と依頼する。  
+4. 必要な Python 依存を入れる。最低限、次を入れておく。  
+
+```bash
+pip install -r photo_video_ui/requirements.txt
+pip install google-api-python-client oauth2client httplib2
+```
+
+### 2. Google Cloud 側を準備する
+
+YouTube へアップロードするには、Google Cloud 側の設定が必要です。AI に画面遷移を案内させながら進めるのがおすすめです。
+
+必要な作業:
+
+1. Google Cloud でプロジェクトを作成または選択する。  
+2. **YouTube Data API v3** を有効化する。  
+3. **OAuth 同意画面**を設定する。  
+4. 認証情報で **OAuth クライアント ID** を作成する。  
+   - 推奨: **デスクトップ アプリ**  
+5. テスト中のアプリとして使う場合は、**自分の Google アカウントをテストユーザーに追加**する。  
+6. ダウンロードした JSON を `youtube/client_secrets.json` として配置する。  
+
+AI には、たとえば次のように頼むと進めやすいです。
+
+- 「このリポジトリの `youtube/client_secrets.json` に必要な Google Cloud Console の設定を案内して」
+- 「OAuth 同意画面とテストユーザー設定で詰まりやすい点を教えて」
+
+### 3. ローカル設定ファイルを作る
+
+1. `youtube/config.json.example` をコピーして `youtube/config.json` を作る。  
+2. 必要なら `target_dir` などの設定をローカル環境に合わせて修正する。  
+
+このファイルや認証ファイルは個人環境依存なので、コミットしません。
+
+### 4. UI を起動する
+
+ブラウザ UI を使う場合は、次のどちらかで起動します。
+
+- `photo_video_ui/start_server.bat` をダブルクリック  
+- または `photo_video_ui/app.py` を Python で起動
+
+起動後、ブラウザで `http://127.0.0.1:5151` を開きます。
+
+### 5. YouTube 認証を完了する
+
+UI からアップロードする前に、**「YouTube 認証を行う」** を使って OAuth 認証を完了させます。
+
+1. UI を開く。  
+2. **「YouTube 認証を行う」** を押す。  
+3. ブラウザで Google ログインと権限許可を行う。  
+4. 認証後、`youtube/youtube-admin-oauth2.json` が作成される。  
+
+もし `403 access_denied` や `insufficient authentication scopes` が出た場合は、次を確認します。
+
+- Google Cloud 側でテストユーザーに自分を追加しているか  
+- OAuth 同意画面が正しく設定されているか  
+- 必要なら `youtube/clear_oauth_token.py` でトークンを削除して再認証する
+
+### 6. 分離とアップロードを実行する
+
+1. UI でソースフォルダと移動先フォルダを設定する。  
+2. まず **プレビュー（ドライラン）** で、分離結果を確認する。  
+3. 必要なら動画を `movie/YYYY/` に分離する。  
+4. UI で `movie` 配下の対象年フォルダを選び、アップロードを実行する。  
+
+### 7. AI に依頼するときのおすすめ
+
+Cursor の AI には、次のように頼むと進めやすいです。
+
+- 「このリポジトリで YouTube アップロードまでに必要な手順を README ベースで整理して」
+- 「Google Cloud Console の設定で足りない点を確認して」
+- 「`client_secrets.json` を配置したので、認証テストして」
+- 「UI を起動して dry-run で問題ないか確認して」
+
+### 8. よく詰まるポイント
+
+- `client_secrets.json` のファイル名が違う  
+- YouTube Data API v3 を有効化していない  
+- OAuth 同意画面の設定不足  
+- テストユーザー未追加で `403 access_denied`  
+- Python 依存が不足していて UI や YouTube スクリプトが起動しない  
+
+迷ったら、まず AI に **`README.md` / `photo_video_ui/README.md` / `youtube/README.md` を読ませたうえで、今どこで詰まっているか** を伝えるのがおすすめです。
