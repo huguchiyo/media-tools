@@ -15,7 +15,9 @@ import sys
 import shutil
 import re
 import json
+import subprocess
 from pathlib import Path
+from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 
 # Windowsでの文字化け対策
@@ -41,6 +43,15 @@ DEFAULT_SOURCE_DIRS = [
 
 # デフォルトの移動先フォルダ
 DEFAULT_TARGET_DIR = 'G:/Users/chiyo/Pictures/movie'
+
+DATE_SOURCE_LABELS = {
+    'folder_name': '日付フォルダ',
+    'filename_renamed': '既存ファイル名',
+    'filename': 'ファイル名',
+    'metadata': 'メタデータ',
+    'mtime': '更新日時',
+    'unknown': 'unknown',
+}
 
 
 def extract_date_from_folder(folder_name: str) -> Optional[tuple]:
@@ -92,6 +103,157 @@ def extract_date_from_filename(filename: str) -> Optional[tuple]:
     return None
 
 
+def _normalize_date_parts(year: str, month: str, day: str) -> Optional[Tuple[str, str]]:
+    """年・月・日を検証し、(year, MMDD) を返す。"""
+    try:
+        dt = datetime(int(year), int(month), int(day))
+    except ValueError:
+        return None
+    return f"{dt.year:04d}", f"{dt.month:02d}{dt.day:02d}"
+
+
+def infer_date_from_filename_patterns(filename: str) -> Optional[Tuple[str, str]]:
+    """
+    ファイル名から日付を推定する。
+
+    例:
+      - 20250423_123456.MOV
+      - IMG_2025-04-23_101010.MOV
+      - 2025_0423_trip.mov
+    """
+    stem = Path(filename).stem
+    patterns = [
+        r'(?<!\d)((?:19|20)\d{2})(\d{2})(\d{2})(?!\d)',
+        r'(?<!\d)((?:19|20)\d{2})[-_.](\d{2})[-_.](\d{2})(?!\d)',
+        r'(?<!\d)((?:19|20)\d{2})[-_.](\d{2})(\d{2})(?!\d)',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, stem)
+        if not match:
+            continue
+        normalized = _normalize_date_parts(match.group(1), match.group(2), match.group(3))
+        if normalized:
+            return normalized
+    return None
+
+
+def _parse_metadata_datetime(value: str) -> Optional[Tuple[str, str]]:
+    """ffprobe などで得た日時文字列を (year, MMDD) に変換する。"""
+    if not value:
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    text = text.replace('/', '-')
+    if text.endswith('Z'):
+        text = text[:-1] + '+00:00'
+
+    # ISO形式や "2025-04-23 10:20:30" を優先
+    try:
+        dt = datetime.fromisoformat(text)
+        return f"{dt.year:04d}", f"{dt.month:02d}{dt.day:02d}"
+    except ValueError:
+        pass
+
+    # "2025:04:23 10:20:30" のような形式
+    match = re.search(r'((?:19|20)\d{2})[:\-](\d{2})[:\-](\d{2})', text)
+    if not match:
+        return None
+    return _normalize_date_parts(match.group(1), match.group(2), match.group(3))
+
+
+def extract_date_from_metadata(file_path: Path) -> Optional[Tuple[str, str]]:
+    """動画メタデータから日付を推定する。ffprobe が無ければ None。"""
+    ffprobe_path = shutil.which('ffprobe')
+    if not ffprobe_path:
+        return None
+
+    cmd = [
+        ffprobe_path,
+        '-v', 'quiet',
+        '-print_format', 'json',
+        '-show_entries',
+        'format_tags=creation_time,com.apple.quicktime.creationdate,date:'
+        'stream_tags=creation_time,com.apple.quicktime.creationdate,date',
+        str(file_path),
+    ]
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='replace',
+            timeout=10,
+            check=False,
+        )
+    except Exception:
+        return None
+
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+
+    tag_sets = []
+    format_tags = ((payload.get('format') or {}).get('tags') or {})
+    if format_tags:
+        tag_sets.append(format_tags)
+    for stream in payload.get('streams', []):
+        tags = (stream or {}).get('tags') or {}
+        if tags:
+            tag_sets.append(tags)
+
+    for tags in tag_sets:
+        for key in ('creation_time', 'com.apple.quicktime.creationdate', 'date'):
+            parsed = _parse_metadata_datetime(tags.get(key, ''))
+            if parsed:
+                return parsed
+    return None
+
+
+def extract_date_from_mtime(file_path: Path) -> Optional[Tuple[str, str]]:
+    """更新日時から日付を推定する。"""
+    try:
+        dt = datetime.fromtimestamp(file_path.stat().st_mtime)
+    except OSError:
+        return None
+    return f"{dt.year:04d}", f"{dt.month:02d}{dt.day:02d}"
+
+
+def infer_date_for_direct_file(file_path: Path) -> Tuple[Optional[str], Optional[str], str, Optional[str], str]:
+    """
+    ソース直下ファイルの日付を推定する。
+
+    Returns:
+        (year, month_day, date_source, new_filename, note)
+    """
+    renamed = extract_date_from_filename(file_path.name)
+    if renamed:
+        year, month_day, _ = renamed
+        return year, month_day, 'filename_renamed', file_path.name, '既に日付付きファイル名です'
+
+    inferred_from_name = infer_date_from_filename_patterns(file_path.name)
+    if inferred_from_name:
+        year, month_day = inferred_from_name
+        return year, month_day, 'filename', generate_new_filename(file_path.name, year, month_day), 'ファイル名から日付を推定しました'
+
+    inferred_from_metadata = extract_date_from_metadata(file_path)
+    if inferred_from_metadata:
+        year, month_day = inferred_from_metadata
+        return year, month_day, 'metadata', generate_new_filename(file_path.name, year, month_day), 'メタデータから撮影日を推定しました'
+
+    inferred_from_mtime = extract_date_from_mtime(file_path)
+    if inferred_from_mtime:
+        year, month_day = inferred_from_mtime
+        return year, month_day, 'mtime', generate_new_filename(file_path.name, year, month_day), '更新日時から日付を推定しました'
+
+    return None, None, 'unknown', file_path.name, '日付を推定できないため unknown に移動します'
+
+
 def generate_new_filename(original_filename: str, year: str, month_day: str) -> str:
     """
     新しいファイル名を生成
@@ -105,6 +267,37 @@ def generate_new_filename(original_filename: str, year: str, month_day: str) -> 
         新しいファイル名（例：2025_0102_IMG_0363.MOV）
     """
     return f"{year}_{month_day}_{original_filename}"
+
+
+def _build_result_payload(source_dirs: List[str], target_dir: str, moved_files: List[Dict[str, str]], dry_run: bool) -> Dict[str, any]:
+    rows = []
+    mtime_count = 0
+    unknown_count = 0
+    for moved in moved_files:
+        date_source = moved.get('date_source', '')
+        if date_source == 'mtime':
+            mtime_count += 1
+        if date_source == 'unknown':
+            unknown_count += 1
+        rows.append({
+            'from': moved.get('source', ''),
+            'to': moved.get('dest', ''),
+            'year': moved.get('year', ''),
+            'date_source': date_source,
+            'date_source_label': DATE_SOURCE_LABELS.get(date_source, date_source or '—'),
+            'note': moved.get('note', ''),
+        })
+    return {
+        'date': datetime.now().isoformat(),
+        'source': source_dirs[0] if source_dirs else '',
+        'source_dirs': source_dirs,
+        'target': target_dir,
+        'count': len(rows),
+        'mtime_count': mtime_count,
+        'unknown_count': unknown_count,
+        'is_preview': dry_run,
+        'rows': rows,
+    }
 
 
 def move_videos_from_source(
@@ -140,13 +333,15 @@ def move_videos_from_source(
     for root, dirs, files in os.walk(source_dir):
         folder_name = os.path.basename(root)
         folder_path = Path(root)
+        is_source_root = folder_path.resolve() == source_dir.resolve()
         
         # フォルダタイプを判定
         date_info = extract_date_from_folder(folder_name)
-        if not date_info:
+        if not date_info and not is_source_root:
             continue
-        
-        year, month_day = date_info
+        year = month_day = None
+        if date_info:
+            year, month_day = date_info
         
         for file in files:
             file_path = folder_path / file
@@ -154,50 +349,59 @@ def move_videos_from_source(
             
             if ext not in VIDEO_EXTENSIONS:
                 continue
-            
+            note = ''
+
             # ファイル名が既にリネーム済みかチェック
             filename_date_info = extract_date_from_filename(file)
-            
             if filename_date_info:
-                # 既にリネーム済み（例：2022_0701_IMG_4509.MOV）
-                # 年フォルダ内の動画は全てリネーム済み
                 file_year, file_month_day, original_name = filename_date_info
-                new_filename = file  # リネーム不要
-                target_year_dir = target_base_dir / file_year
-                new_file_path = target_year_dir / new_filename
-                
-                files_to_move.append({
-                    'source': file_path,
-                    'dest': new_file_path,
-                    'year': file_year,
-                    'month_day': file_month_day,  # 追加
-                    'original_name': original_name,
-                    'new_name': new_filename,
-                    'source_folder': folder_path
-                })
-            else:
+                new_filename = file
+                target_dir_name = file_year
+                new_file_path = target_base_dir / target_dir_name / new_filename
+                date_source = 'filename_renamed'
+                year_value = file_year
+                month_day_value = file_month_day
+                note = '既に日付付きファイル名です'
+            elif date_info:
                 # リネームされていない動画（日付フォルダ内のみ）
-                # 年フォルダ内の動画は全てリネーム済みのため、ここに来るのは日付フォルダ内の動画のみ
                 if month_day is None:
                     # 念のため：年フォルダ内でリネームされていない動画（通常は発生しない）
                     print(f"  警告: 年フォルダ内のリネームされていない動画をスキップ: {file_path.relative_to(source_dir)}")
                     stats['skipped_no_date'] += 1
                     continue
-                
-                # 日付フォルダ内のリネームされていない動画
                 new_filename = generate_new_filename(file, year, month_day)
-                target_year_dir = target_base_dir / year
-                new_file_path = target_year_dir / new_filename
-                
-                files_to_move.append({
-                    'source': file_path,
-                    'dest': new_file_path,
-                    'year': year,
-                    'month_day': month_day,  # 追加
-                    'original_name': file,
-                    'new_name': new_filename,
-                    'source_folder': folder_path
-                })
+                target_dir_name = year
+                new_file_path = target_base_dir / target_dir_name / new_filename
+                date_source = 'folder_name'
+                year_value = year
+                month_day_value = month_day
+                note = '日付フォルダ名を使用しました'
+            elif is_source_root:
+                inferred_year, inferred_month_day, date_source, new_filename, note = infer_date_for_direct_file(file_path)
+                if date_source == 'unknown':
+                    target_dir_name = 'unknown'
+                    new_file_path = target_base_dir / target_dir_name / new_filename
+                    year_value = 'unknown'
+                    month_day_value = None
+                else:
+                    target_dir_name = inferred_year
+                    new_file_path = target_base_dir / target_dir_name / new_filename
+                    year_value = inferred_year
+                    month_day_value = inferred_month_day
+            else:
+                continue
+
+            files_to_move.append({
+                'source': file_path,
+                'dest': new_file_path,
+                'year': year_value,
+                'month_day': month_day_value,
+                'original_name': file,
+                'new_name': new_filename,
+                'source_folder': folder_path,
+                'date_source': date_source,
+                'note': note,
+            })
     
     total = len(files_to_move)
     print(f"  処理対象: {total}個の動画ファイル", flush=True)
@@ -210,17 +414,22 @@ def move_videos_from_source(
         month_day = item['month_day']  # 追加
         original_name = item['original_name']
         new_name = item['new_name']
+        date_source = item.get('date_source', '')
+        date_source_label = DATE_SOURCE_LABELS.get(date_source, date_source or '—')
+        note = item.get('note', '')
         progress = f"[{i}/{total}]"
-        print(f"  {progress} 件目: {source.name} ...", flush=True)
+        print(f"  {progress} 件目: {source.name} [{date_source_label}] ...", flush=True)
         
         stats['processed'] += 1
         
-        # 年フォルダが存在しない場合は作成
-        year_folder = dest.parent
-        if not year_folder.exists():
+        # 移動先フォルダが存在しない場合は作成
+        target_folder = dest.parent
+        if not target_folder.exists():
             if not dry_run:
-                year_folder.mkdir(parents=True, exist_ok=True)
-            print(f"  {progress} [新規作成] 年フォルダ: {year}/", flush=True)
+                target_folder.mkdir(parents=True, exist_ok=True)
+            print(f"  {progress} [新規作成] 移動先フォルダ: {dest.parent.relative_to(target_base_dir)}", flush=True)
+        if note:
+            print(f"  {progress} [判定] {note}", flush=True)
         
         # 重複判定: 移動先に同じファイル名が既にあるか（ファイル名のみで判定）
         if dest.exists():
@@ -244,17 +453,17 @@ def move_videos_from_source(
         # 移動を実行
         try:
             if dry_run:
-                print(f"  {progress} [移動予定] {source.relative_to(source_dir)}", flush=True)
+                print(f"  {progress} [移動予定:{date_source_label}] {source.relative_to(source_dir)}", flush=True)
                 print(f"            -> {dest.relative_to(target_base_dir)}")
             else:
-                # 年フォルダが存在しない場合は作成
-                year_folder.mkdir(parents=True, exist_ok=True)
+                # 移動先フォルダが存在しない場合は作成
+                target_folder.mkdir(parents=True, exist_ok=True)
                 try:
                     size_mb = source.stat().st_size / (1024 * 1024)
                     size_str = f" ({size_mb:.1f} MB)"
                 except Exception:
                     size_str = ""
-                print(f"  {progress} [移動中] {source.relative_to(source_dir)} -> ...{size_str}", flush=True)
+                print(f"  {progress} [移動中:{date_source_label}] {source.relative_to(source_dir)} -> ...{size_str}", flush=True)
                 # 同一ドライブなら os.rename（一瞬）、別ドライブなら shutil.move（コピー＋削除）
                 src_resolved = source.resolve()
                 dest_resolved = dest.resolve()
@@ -266,7 +475,7 @@ def move_videos_from_source(
                     os.rename(str(src_resolved), str(dest))
                 else:
                     shutil.move(str(src_resolved), str(dest))
-                print(f"  {progress} [移動完了] {source.relative_to(source_dir)}", flush=True)
+                print(f"  {progress} [移動完了:{date_source_label}] {source.relative_to(source_dir)}", flush=True)
                 print(f"            -> {dest.relative_to(target_base_dir)}")
             
             stats['moved'] += 1
@@ -275,7 +484,9 @@ def move_videos_from_source(
                 'dest': str(dest.relative_to(target_base_dir)),
                 'year': year,
                 'original_name': original_name,
-                'new_name': new_name
+                'new_name': new_name,
+                'date_source': date_source,
+                'note': note,
             })
             
             # 移動元フォルダを記録（空になったら削除するため）
@@ -318,21 +529,27 @@ def _write_moved_log_md(md_path: Path, logs: list) -> None:
         target = run.get('target_dir', '')
         sources = run.get('source_dirs', [])
         count = run.get('moved_count', 0)
+        mtime_count = run.get('mtime_count', 0)
+        unknown_count = run.get('unknown_count', 0)
         files = run.get('moved_files', [])
         lines.append(f"## 実行 {len(logs) - i} — {date}")
         lines.append("")
         lines.append(f"- **移動先**: `{target}`")
         lines.append(f"- **ソース**: {', '.join(sources)}")
         lines.append(f"- **移動数**: {count} 件")
+        lines.append(f"- **更新日時フォールバック**: {mtime_count} 件")
+        lines.append(f"- **unknown 退避**: {unknown_count} 件")
         lines.append("")
         if files:
-            lines.append("| 移動元 | 移動先（年/ファイル名） | 年 |")
-            lines.append("|--------|------------------------|-----|")
+            lines.append("| 移動元 | 移動先（年/ファイル名） | 年 | 判定方法 |")
+            lines.append("|--------|------------------------|-----|----------|")
             for f in files:
                 src = f.get('source', '').replace('|', '\\|')
                 dest = f.get('dest', '').replace('|', '\\|')
                 year = f.get('year', '')
-                lines.append(f"| {src} | {dest} | {year} |")
+                date_source = f.get('date_source', '')
+                label = DATE_SOURCE_LABELS.get(date_source, date_source or '—')
+                lines.append(f"| {src} | {dest} | {year} | {label} |")
             lines.append("")
         lines.append("---")
         lines.append("")
@@ -404,12 +621,13 @@ def move_videos_to_movie(
     print(f"移動: {total_stats['moved']}個")
     print(f"スキップ（重複）: {total_stats['skipped_duplicate']}個")
     print(f"エラー: {len(total_stats['errors'])}個")
+    mtime_count = sum(1 for f in total_stats['moved_files'] if f.get('date_source') == 'mtime')
+    unknown_count = sum(1 for f in total_stats['moved_files'] if f.get('date_source') == 'unknown')
+    print(f"更新日時フォールバック: {mtime_count}個")
+    print(f"unknown 退避: {unknown_count}個")
     
     # 移動したファイルのリストを保存
     if not dry_run and total_stats['moved_files']:
-        import json
-        from datetime import datetime
-        
         # ログファイルはスクリプトと同じフォルダに保存
         script_dir = Path(__file__).parent
         log_file = script_dir / 'moved_videos_log.json'
@@ -418,6 +636,8 @@ def move_videos_to_movie(
             'target_dir': target_dir,
             'source_dirs': source_dirs,
             'moved_count': len(total_stats['moved_files']),
+            'mtime_count': mtime_count,
+            'unknown_count': unknown_count,
             'moved_files': total_stats['moved_files']
         }
         
@@ -453,9 +673,25 @@ def move_videos_to_movie(
                 files = by_year[year]
                 print(f"  {year}: {len(files)}本")
                 for f in files:
-                    print(f"    - {f.get('source', '')} → {f.get('dest', '')}")
+                    label = DATE_SOURCE_LABELS.get(f.get('date_source', ''), f.get('date_source', ''))
+                    print(f"    - [{label}] {f.get('source', '')} → {f.get('dest', '')}")
         except Exception as e:
             print(f"\n警告: 移動リストの保存に失敗しました: {e}")
+
+    result_payload = _build_result_payload(source_dirs, target_dir, total_stats['moved_files'], dry_run=dry_run)
+    if mtime_count:
+        print("\n【確認が必要な候補】")
+        print(f"  更新日時を使って日付推定した動画: {mtime_count}本")
+        for row in result_payload['rows']:
+            if row.get('date_source') == 'mtime':
+                print(f"    - {row.get('from', '')} → {row.get('to', '')}")
+    if unknown_count:
+        print(f"  unknown に移動する動画: {unknown_count}本")
+        for row in result_payload['rows']:
+            if row.get('date_source') == 'unknown':
+                print(f"    - {row.get('from', '')} → {row.get('to', '')}")
+
+    print(f"__MOVE_RESULT__={json.dumps(result_payload, ensure_ascii=False)}", flush=True)
     
     if total_stats['errors']:
         print("\nエラー詳細:")

@@ -113,8 +113,10 @@
       <div class="summary-line"><strong>ソース</strong> <span id="moveResultSource">—</span></div>
       <div class="summary-line"><strong>移動先</strong> <span id="moveResultTarget">—</span></div>
       <div class="summary-line"><strong>移動数</strong> <span id="moveResultCount">—</span> 件</div>
+      <div class="summary-line"><strong>更新日時フォールバック</strong> <span id="moveResultMtimeCount">—</span> 件</div>
+      <div class="summary-line"><strong>unknown 退避</strong> <span id="moveResultUnknownCount">—</span> 件</div>
       <table>
-        <thead><tr><th>移動元</th><th>移動先（年/ファイル名）</th><th>年</th></tr></thead>
+        <thead><tr><th>移動元</th><th>移動先（年/ファイル名）</th><th>年</th><th>判定方法</th><th>メモ</th></tr></thead>
         <tbody id="moveResultTableBody"></tbody>
       </table>
     </div>
@@ -228,7 +230,7 @@
     }
     logModalCloseBtn.addEventListener('click', closeLogModal);
 
-    function readSSEStream(response, onLine, onDone) {
+    function readSSEStream(response, onLine, onDone, onResult) {
       var reader = response.body.getReader();
       var buffer = '';
       function read() {
@@ -246,6 +248,7 @@
               try {
                 var obj = JSON.parse(m[1]);
                 if (obj.line !== undefined) onLine(obj.line);
+                if (obj.result !== undefined && onResult) onResult(obj.result);
                 if (obj.done && onDone) onDone();
               } catch (e) {}
             }
@@ -256,22 +259,40 @@
       read();
     }
 
-    function runSeparate(confirm) {
-      if (confirm && !window.confirm('分離を実行します。よろしいですか？')) return;
+    function escapeHtml(text) {
+      return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function executeSeparateRequest(options, title, onComplete) {
       var source = document.getElementById('sepSource').value.trim();
       var target = document.getElementById('sepTarget').value.trim();
-      openLogModal('実行中 — 写真と動画の分離');
+      var latestResult = null;
+      openLogModal(title);
       fetch(API + '/api/separate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: source, target: target, noConfirm: !confirm })
+        body: JSON.stringify(Object.assign({ source: source, target: target }, options || {}))
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
         readSSEStream(r, appendLogLine, function() {
           logModalCloseBtn.disabled = false;
+          if (latestResult) {
+            if (onComplete) onComplete(latestResult);
+            return;
+          }
           fetch(API + '/api/separate/result').then(function(res) { return res.json(); }).then(function(data) {
-            if (data.ok && data.result) showMoveResult(false, data.result);
+            if (data.ok && data.result) {
+              latestResult = data.result;
+              if (onComplete) onComplete(latestResult);
+            }
           });
+        }, function(result) {
+          latestResult = result;
         });
       }).catch(function(e) {
         appendLogLine('エラー: ' + (e.message || e));
@@ -279,26 +300,49 @@
       });
     }
 
+    function buildSeparateConfirmMessage(result) {
+      if (!result) return '分離を実行します。よろしいですか？';
+      var lines = [];
+      lines.push('プレビュー結果を確認してから本実行します。');
+      lines.push('移動予定: ' + (result.count || 0) + ' 件');
+      if (result.mtime_count) lines.push('更新日時フォールバック: ' + result.mtime_count + ' 件');
+      if (result.unknown_count) lines.push('unknown 退避: ' + result.unknown_count + ' 件');
+      lines.push('');
+      lines.push('この内容で本実行しますか？');
+      return lines.join('\n');
+    }
+
+    function startSeparateActual() {
+      executeSeparateRequest(
+        { dryRun: false },
+        '実行中 — 写真と動画の分離',
+        function(result) { showMoveResult(false, result); }
+      );
+    }
+
+    function runSeparate(confirm) {
+      if (!confirm) {
+        startSeparateActual();
+        return;
+      }
+      executeSeparateRequest(
+        { dryRun: true },
+        'プレビュー（確認用） — 写真と動画の分離',
+        function(result) {
+          showMoveResult(true, result);
+          if (window.confirm(buildSeparateConfirmMessage(result))) {
+            startSeparateActual();
+          }
+        }
+      );
+    }
+
     function runSeparatePreview() {
-      var source = document.getElementById('sepSource').value.trim();
-      var target = document.getElementById('sepTarget').value.trim();
-      openLogModal('プレビュー（ドライラン） — 写真と動画の分離');
-      fetch(API + '/api/separate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: source, target: target, dryRun: true })
-      }).then(function(r) {
-        if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
-        readSSEStream(r, appendLogLine, function() {
-          logModalCloseBtn.disabled = false;
-          fetch(API + '/api/separate/result').then(function(res) { return res.json(); }).then(function(data) {
-            if (data.ok && data.result) showMoveResult(true, data.result);
-          });
-        });
-      }).catch(function(e) {
-        appendLogLine('エラー: ' + (e.message || e));
-        logModalCloseBtn.disabled = false;
-      });
+      executeSeparateRequest(
+        { dryRun: true },
+        'プレビュー（ドライラン） — 写真と動画の分離',
+        function(result) { showMoveResult(true, result); }
+      );
     }
 
     function showMoveResult(isPreview, r) {
@@ -308,9 +352,11 @@
       document.getElementById('moveResultSource').textContent = r.source || '—';
       document.getElementById('moveResultTarget').textContent = r.target || '—';
       document.getElementById('moveResultCount').textContent = (r.count != null ? r.count : '—');
+      document.getElementById('moveResultMtimeCount').textContent = (r.mtime_count != null ? r.mtime_count : '—');
+      document.getElementById('moveResultUnknownCount').textContent = (r.unknown_count != null ? r.unknown_count : '—');
       var tbody = document.getElementById('moveResultTableBody');
       tbody.innerHTML = (r.rows || []).map(function(row) {
-        return '<tr><td>' + (row.from || '') + '</td><td>' + (row.to || '') + '</td><td>' + (row.year || '') + '</td></tr>';
+        return '<tr><td>' + escapeHtml(row.from || '') + '</td><td>' + escapeHtml(row.to || '') + '</td><td>' + escapeHtml(row.year || '') + '</td><td>' + escapeHtml(row.date_source_label || '') + '</td><td>' + escapeHtml(row.note || '') + '</td></tr>';
       }).join('');
       document.getElementById('moveResult').classList.add('visible');
     }

@@ -11,7 +11,7 @@
 | 3 | movie の動画のうち未アップロードを確認し結果を表示。該当年を YouTube にアップロード | youtube | — |
 | 4 | アップロード結果を記録 | youtube | `youtube/data/upload_runs.json`（確認用: `upload_runs.md`）および `uploaded_from_youtube.txt` |
 
-- **1・2**: [VideoMoveTools](VideoMoveTools/README.md) のリネーム規則に従い、`camera`（または指定ソース）の動画を `movie/YYYY/` に移動し、その結果を `moved_videos_log.json` に追記します。実行後は**移動結果（年ごとの一覧）を表示**します。
+- **1・2**: [VideoMoveTools](VideoMoveTools/README.md) のリネーム規則に従い、`camera`（または指定ソース）の動画を `movie/YYYY/` に移動し、その結果を `moved_videos_log.json` に追記します。ソース直下の動画も対象で、ファイル名・メタデータ・更新日時から日付を推定します。実行後は**移動結果（年ごとの一覧）を表示**します。
 - **3**: **movie フォルダ**をスキャンし、`youtube/data/uploaded_from_youtube.txt` に載っていない動画を**未アップロードとして一覧表示**します。該当する年のフォルダを YouTube にアップロードするか確認してから本番実行します。
 - **4**: 各アップロード実行ごとに `youtube_upload.py` が成功・スキップ・失敗件数を `youtube/data/upload_runs.json` に追記し、アップロード済みタイトルは `uploaded_from_youtube.txt` に追記します。
 
@@ -60,8 +60,9 @@ python workflow.py --years 2024 2025
 
 ## フォルダ構成の想定
 
-- **camera**: インポートした写真・動画が入るフォルダ（日付フォルダや年フォルダ）。
+- **camera**: インポートした写真・動画が入るフォルダ（日付フォルダや年フォルダ、または写真・動画が直下に混在するフォルダ）。
 - **movie**: 動画のみリネーム後に年ごとに格納するフォルダ（`movie/2024/`, `movie/2025/` など）。
+- **movie/unknown**: 日付を推定できなかった動画の退避先。
 
 移動先ベースは VideoMoveTools のデフォルト（`movie`）または `--target` で指定。アップロード時は `--movie-dir`（既定で同じ movie パス）でスキャンし、未アップロード判定に `uploaded_from_youtube.txt` を使います。
 

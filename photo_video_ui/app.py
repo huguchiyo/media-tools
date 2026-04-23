@@ -35,6 +35,7 @@ DEFAULT_CAMERA = "G:/Users/chiyo/Pictures/camera"
 DEFAULT_MOVIE = "G:/Users/chiyo/Pictures/movie"
 
 app = Flask(__name__, static_folder="static", static_url_path="")
+LAST_SEPARATE_RESULT = None
 
 
 def load_settings():
@@ -128,6 +129,61 @@ def api_folder_picker():
     return jsonify({"ok": True, "path": path})
 
 
+def _normalize_move_result(entry):
+    """スクリプト結果または moved_videos_log.json を UI 用に正規化する。"""
+    if not entry:
+        return None
+    label_map = {
+        "folder_name": "日付フォルダ",
+        "filename_renamed": "既存ファイル名",
+        "filename": "ファイル名",
+        "metadata": "メタデータ",
+        "mtime": "更新日時",
+        "unknown": "unknown",
+    }
+    date = entry.get("date", "")
+    if date and "T" in date:
+        date = date.replace("T", " ")[:19]
+
+    raw_rows = entry.get("rows")
+    if raw_rows is None:
+        raw_rows = [
+            {
+                "from": m.get("source", ""),
+                "to": m.get("dest", ""),
+                "year": m.get("year", ""),
+                "date_source": m.get("date_source", ""),
+                "date_source_label": label_map.get(m.get("date_source", ""), m.get("date_source", "") or "—"),
+                "note": m.get("note", ""),
+            }
+            for m in entry.get("moved_files", [])
+        ]
+
+    rows = []
+    for row in raw_rows:
+        date_source = row.get("date_source", "")
+        rows.append({
+            "from": row.get("from", row.get("source", "")),
+            "to": row.get("to", row.get("dest", "")),
+            "year": row.get("year", ""),
+            "date_source": date_source,
+            "date_source_label": row.get("date_source_label") or label_map.get(date_source, date_source or "—"),
+            "note": row.get("note", ""),
+        })
+
+    return {
+        "date": date,
+        "source": entry.get("source", entry.get("source_dirs", [""])[0] if entry.get("source_dirs") else ""),
+        "source_dirs": entry.get("source_dirs", []),
+        "target": entry.get("target", entry.get("target_dir", "")),
+        "count": entry.get("count", entry.get("moved_count", len(rows))),
+        "mtime_count": entry.get("mtime_count", sum(1 for row in rows if row.get("date_source") == "mtime")),
+        "unknown_count": entry.get("unknown_count", sum(1 for row in rows if row.get("date_source") == "unknown")),
+        "is_preview": bool(entry.get("is_preview", False)),
+        "rows": rows,
+    }
+
+
 def _last_move_result():
     """moved_videos_log.json の直近1件を返す。"""
     if not MOVED_LOG_JSON.exists():
@@ -139,32 +195,15 @@ def _last_move_result():
             entry = log[-1] if log else None
         else:
             entry = log
-        if not entry:
-            return None
-        from datetime import datetime
-        date = entry.get("date", "")
-        if date and "T" in date:
-            date = date.replace("T", " ")[:19]
-        return {
-            "date": date,
-            "source": entry.get("source_dirs", [""])[0] if entry.get("source_dirs") else "",
-            "target": entry.get("target_dir", ""),
-            "count": entry.get("moved_count", 0),
-            "rows": [
-                {
-                    "from": m.get("source", ""),
-                    "to": m.get("dest", ""),
-                    "year": m.get("year", ""),
-                }
-                for m in entry.get("moved_files", [])
-            ],
-        }
+        return _normalize_move_result(entry)
     except Exception:
         return None
 
 
 @app.route("/api/separate/result", methods=["GET"])
 def api_separate_result():
+    if LAST_SEPARATE_RESULT is not None:
+        return jsonify({"ok": True, "result": _normalize_move_result(LAST_SEPARATE_RESULT)})
     result = _last_move_result()
     if result is None:
         return jsonify({"ok": False, "result": None})
@@ -174,19 +213,52 @@ def api_separate_result():
 @app.route("/api/separate", methods=["POST"])
 def api_separate():
     """分離を実行し、ログをストリーミングで返す。"""
+    global LAST_SEPARATE_RESULT
     data = request.get_json() or {}
     source = (data.get("source") or "").strip() or DEFAULT_CAMERA
     target = (data.get("target") or "").strip() or DEFAULT_MOVIE
     dry_run = bool(data.get("dryRun", False))
+    LAST_SEPARATE_RESULT = None
 
     def generate():
+        global LAST_SEPARATE_RESULT
         if dry_run:
             args = ["--source", source, "--target", target, "--dry-run"]
         else:
             # UI 側で確認済みのため常に --execute-yes（スクリプトの stdin 確認でブロックしない）
             args = ["--source", source, "--target", target, "--execute-yes"]
-        for line in stream_process(VIDEO_MOVE_SCRIPT, args, cwd=TOOLS_ROOT):
-            yield f"data: {json.dumps({'line': line})}\n\n"
+        cmd = [sys.executable, str(VIDEO_MOVE_SCRIPT)] + args
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
+        result_payload = None
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(TOOLS_ROOT),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=env,
+                bufsize=1,
+            )
+            for line in iter(proc.stdout.readline, ""):
+                clean = line.rstrip("\n") or "\n"
+                if clean.startswith("__MOVE_RESULT__="):
+                    try:
+                        result_payload = json.loads(clean.split("=", 1)[1])
+                    except Exception:
+                        result_payload = None
+                    continue
+                yield f"data: {json.dumps({'line': clean})}\n\n"
+            proc.wait()
+        except Exception as e:
+            yield f"data: {json.dumps({'line': f'Error: {e}'})}\n\n"
+
+        if result_payload is not None:
+            LAST_SEPARATE_RESULT = result_payload
+            yield f"data: {json.dumps({'result': _normalize_move_result(result_payload)})}\n\n"
         yield "data: {\"done\": true}\n\n"
 
     if not VIDEO_MOVE_SCRIPT.exists():
