@@ -31,21 +31,25 @@ UPLOAD_RUNS_JSON = TOOLS_ROOT / "youtube" / "data" / "upload_runs.json"
 DATA_DIR = Path(__file__).resolve().parent / "data"
 SETTINGS_JSON = DATA_DIR / "settings.json"
 
-DEFAULT_CAMERA = "G:/Users/chiyo/Pictures/camera"
-DEFAULT_MOVIE = "G:/Users/chiyo/Pictures/movie"
-
 app = Flask(__name__, static_folder="static", static_url_path="")
 LAST_SEPARATE_RESULT = None
 
 
 def load_settings():
+    base = {"pathCamera": "", "pathMovie": "", "uploadNoFetchList": True}
     if not SETTINGS_JSON.exists():
-        return {"pathCamera": DEFAULT_CAMERA, "pathMovie": DEFAULT_MOVIE}
+        return base.copy()
     try:
         with open(SETTINGS_JSON, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        out = base.copy()
+        out["pathCamera"] = (data.get("pathCamera") or "").strip()
+        out["pathMovie"] = (data.get("pathMovie") or "").strip()
+        if "uploadNoFetchList" in data:
+            out["uploadNoFetchList"] = bool(data["uploadNoFetchList"])
+        return out
     except Exception:
-        return {"pathCamera": DEFAULT_CAMERA, "pathMovie": DEFAULT_MOVIE}
+        return base.copy()
 
 
 def save_settings(settings):
@@ -114,6 +118,8 @@ def api_save_settings():
         s["pathCamera"] = data["pathCamera"]
     if "pathMovie" in data:
         s["pathMovie"] = data["pathMovie"]
+    if "uploadNoFetchList" in data:
+        s["uploadNoFetchList"] = bool(data["uploadNoFetchList"])
     save_settings(s)
     return jsonify(s)
 
@@ -215,8 +221,10 @@ def api_separate():
     """分離を実行し、ログをストリーミングで返す。"""
     global LAST_SEPARATE_RESULT
     data = request.get_json() or {}
-    source = (data.get("source") or "").strip() or DEFAULT_CAMERA
-    target = (data.get("target") or "").strip() or DEFAULT_MOVIE
+    source = (data.get("source") or "").strip()
+    target = (data.get("target") or "").strip()
+    if not source or not target:
+        return jsonify({"error": "指定フォルダと動画保存用フォルダを指定してください。"}), 400
     dry_run = bool(data.get("dryRun", False))
     LAST_SEPARATE_RESULT = None
 
@@ -272,9 +280,12 @@ def api_separate():
 
 @app.route("/api/movie-folders", methods=["GET"])
 def api_movie_folders():
-    """movie 直下のサブフォルダ名一覧を返す。"""
+    """動画保存用フォルダ直下のサブフォルダ名一覧を返す。"""
     s = load_settings()
-    movie_path = Path(s.get("pathMovie", DEFAULT_MOVIE))
+    movie_root = (s.get("pathMovie") or "").strip()
+    if not movie_root:
+        return jsonify({"ok": True, "folders": []})
+    movie_path = Path(movie_root)
     if not movie_path.exists() or not movie_path.is_dir():
         return jsonify({"ok": True, "folders": []})
     folders = sorted(
@@ -357,7 +368,7 @@ def api_youtube_auth():
     保存されているトークンを削除し、youtube_upload.py を実行して
     アップロード用スコープでブラウザログインを促す。
     ※ --dry-run は使わない（dry-run だと読み取り専用スコープになり、後で 403 になるため）。
-    ※ 動画が入っていない「movie の直下」を --dir に指定し、実際のアップロードは行わない。
+    ※ 動画が入っていない「動画保存用フォルダの直下」を --dir に指定し、実際のアップロードは行わない。
     """
     # 既存トークンを削除（invalid_grant / 403 対策）
     if YOUTUBE_TOKEN_FILE.exists():
@@ -367,14 +378,16 @@ def api_youtube_auth():
             pass
 
     s = load_settings()
-    movie_path = (s.get("pathMovie") or DEFAULT_MOVIE).strip().rstrip("/\\")
-    # movie 直下を指定（直下に動画ファイルがなければ 0 件で終了。アップロード用スコープで認証だけ行う）
+    movie_path = (s.get("pathMovie") or "").strip().rstrip("/\\")
+    if not movie_path:
+        return jsonify({"error": "先に「動画保存用フォルダ」を設定してください。"}), 400
+    # 動画保存用フォルダ直下を指定（直下に動画ファイルがなければ 0 件で終了。アップロード用スコープで認証だけ行う）
     dir_path = movie_path
 
     def generate():
         yield f"data: {json.dumps({'line': 'OAuth トークンをリセットしました。'})}\n\n"
         yield f"data: {json.dumps({'line': 'ブラウザが開いたら Google でログインし、「許可」を押してアップロード権限を付与してください。'})}\n\n"
-        yield f"data: {json.dumps({'line': '（movie 直下に動画はないため、この実行ではアップロードは行われません）'})}\n\n"
+        yield f"data: {json.dumps({'line': '（動画保存用フォルダ直下に動画はないため、この実行ではアップロードは行われません）'})}\n\n"
         for line in stream_process(YOUTUBE_SCRIPT, ["--dir", dir_path], cwd=YOUTUBE_DIR):
             yield f"data: {json.dumps({'line': line})}\n\n"
         yield "data: {\"done\": true}\n\n"
@@ -396,9 +409,15 @@ def api_upload():
     dry_run = bool(data.get("dryRun", False))
     if not dir_path:
         return jsonify({"error": "dir を指定してください"}), 400
+    if "noFetchList" in data:
+        no_fetch_list = bool(data["noFetchList"])
+    else:
+        no_fetch_list = bool(load_settings().get("uploadNoFetchList", True))
 
     def generate():
-        args = ["--dir", dir_path, "--no-fetch-list"]
+        args = ["--dir", dir_path]
+        if no_fetch_list:
+            args.append("--no-fetch-list")
         if dry_run:
             args.append("--dry-run")
         for line in stream_process(YOUTUBE_SCRIPT, args, cwd=TOOLS_ROOT / "youtube"):

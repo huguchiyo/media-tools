@@ -4,98 +4,295 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>写真・動画ツール</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #1a1a2e;
-      --card: #16213e;
-      --accent: #0f3460;
-      --text: #e8e8e8;
-      --muted: #a0a0a0;
-      --success: #4ade80;
-      --warn: #fbbf24;
+      --cork: #d9cbb5;
+      --cork-deep: #c4b09a;
+      --orange: #f59e0b;
+      --orange-hover: #ea860b;
+      --orange-header: #f8a528;
+      --paper: #fffef8;
+      --paper-shadow: rgba(101, 67, 33, 0.14);
+      --text: #3d3428;
+      --muted: #6b5d4f;
+      --line: rgba(139, 115, 85, 0.22);
+      --input-bg: #fff;
+      --cream-btn: #f3ead8;
+      --cream-btn-hover: #e8dcc4;
+      --success: #16a34a;
+      --warn: #ca8a04;
+      --modal-log-bg: #f7f4ee;
+      --modal-log-text: #2c2419;
     }
     * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', 'Yu Gothic UI', sans-serif;
-      background: var(--bg);
+      font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Yu Gothic UI', Meiryo, sans-serif;
+      background: var(--cork);
+      background-image:
+        radial-gradient(ellipse 120% 80% at 10% -20%, rgba(255, 255, 255, 0.45) 0%, transparent 55%),
+        radial-gradient(ellipse 80% 60% at 100% 110%, rgba(139, 90, 43, 0.12) 0%, transparent 50%),
+        repeating-linear-gradient(
+          -8deg,
+          transparent,
+          transparent 3px,
+          rgba(139, 90, 43, 0.03) 3px,
+          rgba(139, 90, 43, 0.03) 4px
+        );
       color: var(--text);
       margin: 0;
-      padding: 1.5rem 2rem;
-      line-height: 1.5;
+      padding: 0 1.25rem 2rem;
+      line-height: 1.55;
+      min-height: 100vh;
     }
-    .header { margin-bottom: 1rem; }
-    h1 { font-size: 1.5rem; margin: 0; color: var(--text); }
-    h2 { font-size: 1.1rem; margin: 1.5rem 0 0.75rem 0; padding-bottom: 0.35rem; border-bottom: 1px solid var(--accent); color: var(--text); }
-    h2:first-of-type { margin-top: 0; }
-    section { background: var(--card); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
-    label { display: block; margin-bottom: 0.25rem; color: var(--muted); font-size: 0.9rem; }
+    .app-header {
+      background: linear-gradient(180deg, var(--orange-header) 0%, #f59e0b 100%);
+      color: #fff;
+      margin: 0 -1.25rem 1.5rem;
+      padding: 1.25rem 1.5rem 1.35rem;
+      box-shadow: 0 4px 16px rgba(180, 100, 20, 0.25);
+    }
+    .app-header h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+    .app-header .app-tagline {
+      margin: 0.35rem 0 0;
+      font-size: 0.82rem;
+      font-weight: 500;
+      opacity: 0.95;
+    }
+    .app-main { max-width: 920px; margin: 0 auto; }
+    h2 {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin: 0 0 0.65rem 0;
+      padding-bottom: 0.45rem;
+      color: var(--text);
+      border-bottom: 3px solid rgba(248, 165, 40, 0.55);
+    }
+    section {
+      position: relative;
+      background: var(--paper);
+      border-radius: 16px;
+      padding: 1.65rem 1.4rem 1.45rem;
+      margin-bottom: 1.35rem;
+      box-shadow:
+        0 6px 20px var(--paper-shadow),
+        0 1px 3px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+    section::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #7dd3a0, #2d8f5c);
+      box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    label { display: block; margin-bottom: 0.3rem; color: var(--muted); font-size: 0.88rem; font-weight: 500; }
+    label strong { color: var(--text); font-weight: 700; }
+    .section-lead { color: var(--muted) !important; }
+    .section-lead strong { color: var(--text) !important; font-weight: 700; }
+    .hint-text { color: var(--muted); font-size: 0.85rem; }
+    .hint-text strong { color: var(--text); font-weight: 600; }
     input[type="text"] {
-      width: 100%; max-width: 520px; padding: 0.5rem;
-      background: var(--accent); border: 1px solid #2a4a6a; border-radius: 4px; color: var(--text); font-size: 0.9rem;
+      width: 100%; max-width: 520px; padding: 0.55rem 0.65rem;
+      background: var(--input-bg);
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-family: inherit;
     }
+    input[type="text"]:focus { outline: none; border-color: rgba(248, 165, 40, 0.75); box-shadow: 0 0 0 3px rgba(248, 165, 40, 0.2); }
     select {
-      padding: 0.5rem; background: var(--accent); border: 1px solid #2a4a6a; border-radius: 4px;
-      color: var(--text); font-size: 0.9rem; min-width: 200px;
+      padding: 0.55rem 0.65rem;
+      background: var(--input-bg);
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.88rem;
+      min-width: 200px;
+      font-family: inherit;
+    }
+    select:focus { outline: none; border-color: rgba(248, 165, 40, 0.75); }
+    .upload-option-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      margin-bottom: 0.65rem;
+      max-width: 42rem;
+    }
+    .upload-option-row input[type="checkbox"] {
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+      accent-color: var(--orange);
+      cursor: pointer;
+    }
+    .upload-option-row .upload-option-text { flex: 1; min-width: 0; }
+    .upload-option-row .upload-option-text label {
+      display: inline;
+      margin: 0;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .upload-option-row .upload-option-hint {
+      margin: 0.25rem 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
     }
     .row { margin-bottom: 0.75rem; }
-    .row-cols { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; align-items: flex-start; }
+    .row-cols { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; align-items: flex-start; }
     .row-cols .row { flex: 1 1 220px; min-width: 200px; max-width: 400px; margin-bottom: 0; }
     .path-with-browse { display: flex; gap: 0.5rem; align-items: center; }
     .path-with-browse input { flex: 1; min-width: 0; }
-    .path-with-browse .btn-browse { flex-shrink: 0; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
-    input.readonly-display { cursor: default; opacity: 0.95; }
+    .path-with-browse .btn-browse { flex-shrink: 0; padding: 0.5rem 0.85rem; font-size: 0.82rem; border-radius: 10px; }
+    input.readonly-display { cursor: default; background: #faf7f0; }
     .btn {
-      padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.9rem;
-      cursor: pointer; margin-right: 0.5rem; margin-top: 0.25rem;
+      padding: 0.55rem 1.1rem;
+      border: none;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-right: 0.45rem;
+      margin-top: 0.3rem;
+      box-shadow: 0 2px 6px rgba(61, 52, 40, 0.12);
+      transition: transform 0.08s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
-    .btn-primary { background: #2563eb; color: white; }
-    .btn-primary:hover { background: #1d4ed8; }
-    .btn-secondary { background: var(--accent); color: var(--text); }
-    .btn-secondary:hover { background: #2a4a6a; }
-    .result-box { margin-top: 1rem; padding: 1rem; background: var(--accent); border-radius: 6px; font-size: 0.9rem; display: none; }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: linear-gradient(180deg, var(--orange) 0%, var(--orange-hover) 100%);
+      color: #fff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+    }
+    .btn-primary:hover { filter: brightness(1.05); box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35); }
+    .btn-secondary {
+      background: var(--cream-btn);
+      color: var(--text);
+      border: 2px solid var(--line);
+      box-shadow: 0 2px 4px rgba(61, 52, 40, 0.08);
+    }
+    .btn-secondary:hover { background: var(--cream-btn-hover); }
+    .result-box {
+      margin-top: 1rem;
+      padding: 1rem 1.1rem;
+      background: linear-gradient(180deg, #fffbeb 0%, #fff8e6 100%);
+      border-radius: 12px;
+      font-size: 0.88rem;
+      display: none;
+      border: 2px dashed rgba(245, 158, 11, 0.35);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
     .result-box.visible { display: block; }
-    .result-box h3 { font-size: 0.95rem; margin: 0 0 0.5rem 0; color: var(--text); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    th, td { padding: 0.4rem 0.6rem; text-align: left; border-bottom: 1px solid #2a4a6a; }
-    th { color: var(--muted); font-weight: 600; }
-    .summary-line { margin-bottom: 0.35rem; }
-    .summary-line strong { color: var(--muted); margin-right: 0.5rem; }
-    .result-detail { border-top: 1px solid #2a4a6a; padding-top: 0.75rem; }
+    .result-box h3 { font-size: 0.98rem; margin: 0 0 0.55rem 0; color: var(--text); font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { padding: 0.45rem 0.55rem; text-align: left; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 700; background: rgba(255, 255, 255, 0.6); }
+    .summary-line { margin-bottom: 0.4rem; font-size: 0.88rem; }
+    .summary-line strong { color: var(--muted); margin-right: 0.45rem; font-weight: 600; }
+    .result-detail { border-top: 1px solid var(--line); padding-top: 0.85rem; }
     .detail-block { margin-bottom: 0.75rem; }
-    .detail-title { display: block; color: var(--muted); font-size: 0.85rem; margin-bottom: 0.25rem; }
-    .detail-list { margin: 0; padding-left: 1.25rem; font-size: 0.85rem; max-height: 12rem; overflow-y: auto; }
+    .detail-title { display: block; color: var(--muted); font-size: 0.84rem; margin-bottom: 0.25rem; }
+    .detail-list { margin: 0; padding-left: 1.25rem; font-size: 0.84rem; max-height: 12rem; overflow-y: auto; }
     .detail-list li { margin-bottom: 0.2rem; }
-    .log-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .log-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(61, 52, 40, 0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(3px);
+    }
     .log-modal-overlay.visible { display: flex; }
-    .log-modal-dialog { background: var(--card); border-radius: 10px; max-width: 640px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-    .log-modal-title { padding: 1rem 1.25rem; border-bottom: 1px solid var(--accent); font-size: 1rem; color: var(--text); }
-    .log-modal-body { padding: 1rem 1.25rem; overflow: hidden; flex: 1; min-height: 200px; }
-    .log-modal-log { font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem; background: #0d1117; color: #e6edf3; padding: 0.75rem 1rem; border-radius: 6px; height: 280px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+    .log-modal-dialog {
+      background: var(--paper);
+      border-radius: 18px;
+      max-width: 640px;
+      width: 100%;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 48px rgba(61, 52, 40, 0.22), 0 4px 12px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      overflow: hidden;
+    }
+    .log-modal-title {
+      padding: 0.95rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(180deg, var(--orange-header) 0%, #f59e0b 100%);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+    .log-modal-body { padding: 1rem 1.15rem; overflow: hidden; flex: 1; min-height: 200px; background: #faf6ef; }
+    .log-modal-log {
+      font-family: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+      font-size: 0.78rem;
+      background: var(--modal-log-bg);
+      color: var(--modal-log-text);
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      border: 1px solid var(--line);
+      box-shadow: inset 0 2px 6px rgba(61, 52, 40, 0.06);
+    }
     .log-modal-log .log-line { margin-bottom: 0.2rem; }
-    .log-modal-log .log-line.error { color: #f85149; }
-    .log-modal-log .log-line.warn { color: var(--warn); }
-    .log-modal-footer { padding: 0.75rem 1.25rem; border-top: 1px solid var(--accent); display: flex; justify-content: flex-end; gap: 0.5rem; }
-    .log-modal-footer .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .log-modal-log .log-line.error { color: #dc2626; font-weight: 600; }
+    .log-modal-log .log-line.warn { color: var(--warn); font-weight: 600; }
+    .log-modal-footer {
+      padding: 0.85rem 1.15rem;
+      border-top: 1px solid var(--line);
+      background: var(--paper);
+    }
+    .log-modal-footer-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+    .log-modal-footer .btn:disabled { opacity: 0.55; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <div class="header">
+  <header class="app-header">
     <h1>写真・動画ツール</h1>
-  </div>
+    <p class="app-tagline">家族の動画を、ゆったり整理 ♪</p>
+  </header>
 
+  <main class="app-main">
   <section>
     <h2>1. 写真と動画の分離</h2>
-    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.75rem;">指定フォルダ内の動画を movie フォルダへ移動・リネームします。写真はそのまま残ります。</p>
+    <p class="section-lead" style="font-size: 0.9rem; margin-bottom: 0.75rem;"><strong>指定フォルダ</strong>内の動画を<strong>動画保存用フォルダ</strong>へ移動・リネームします。写真はそのまま残ります。</p>
     <div class="row-cols">
       <div class="row">
-        <label>ソース</label>
+        <label><strong>指定フォルダ</strong></label>
         <div class="path-with-browse">
           <input type="text" id="sepSource" value="" readonly class="readonly-display" />
           <button type="button" class="btn btn-secondary btn-browse" id="browseSource" title="フォルダを選択">参照</button>
         </div>
       </div>
       <div class="row">
-        <label>移動先</label>
+        <label><strong>動画保存用フォルダ</strong></label>
         <div class="path-with-browse">
           <input type="text" id="sepTarget" value="" readonly class="readonly-display" />
           <button type="button" class="btn btn-secondary btn-browse" id="browseTarget" title="フォルダを選択">参照</button>
@@ -103,15 +300,14 @@
       </div>
     </div>
     <div>
-      <button type="button" class="btn btn-primary" onclick="runSeparate(true);">分離を実行（確認ダイアログあり）</button>
-      <button type="button" class="btn btn-secondary" onclick="runSeparate(false);">確認なしで実行</button>
       <button type="button" class="btn btn-secondary" onclick="runSeparatePreview();">プレビュー（ドライラン）</button>
+      <button type="button" class="btn btn-primary" onclick="runSeparateWithConfirm();">分離を実行（確認ダイアログあり）</button>
     </div>
     <div id="moveResult" class="result-box">
       <h3>分離結果</h3>
       <div class="summary-line"><strong>実行日時</strong> <span id="moveResultDate">—</span></div>
-      <div class="summary-line"><strong>ソース</strong> <span id="moveResultSource">—</span></div>
-      <div class="summary-line"><strong>移動先</strong> <span id="moveResultTarget">—</span></div>
+      <div class="summary-line"><strong>指定フォルダ</strong> <span id="moveResultSource">—</span></div>
+      <div class="summary-line"><strong>動画保存用フォルダ</strong> <span id="moveResultTarget">—</span></div>
       <div class="summary-line"><strong>移動数</strong> <span id="moveResultCount">—</span> 件</div>
       <div class="summary-line"><strong>更新日時フォールバック</strong> <span id="moveResultMtimeCount">—</span> 件</div>
       <div class="summary-line"><strong>unknown 退避</strong> <span id="moveResultUnknownCount">—</span> 件</div>
@@ -124,8 +320,8 @@
 
   <section>
     <h2>2. 動画のアップロード</h2>
-    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem;">movie 直下のフォルダを1つ選んで、YouTube にアップロードします。</p>
-    <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem;">初回や「invalid_grant」「403 Insufficient Permission」が出た場合は、先に<strong>YouTube 認証を行う</strong>を実行してください。ブラウザで Google にログインし、<strong>「許可」でアップロード権限を付与</strong>するとアップロードできるようになります。</p>
+    <p class="section-lead" style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>動画保存用フォルダ</strong>直下のフォルダを1つ選んで、YouTube にアップロードします。</p>
+    <p class="hint-text" style="margin-bottom: 0.5rem;">初回や「invalid_grant」「403 Insufficient Permission」が出た場合は、先に<strong>YouTube 認証を行う</strong>を実行してください。ブラウザで Google にログインし、<strong>「許可」でアップロード権限を付与</strong>するとアップロードできるようになります。</p>
     <div style="margin-bottom: 0.75rem;">
       <button type="button" class="btn btn-secondary" id="btnYoutubeAuth">YouTube 認証を行う</button>
     </div>
@@ -133,9 +329,16 @@
       <label>アップロードするフォルダ（1つ）</label>
       <select id="uploadFolder"><option value="">— 選択 —</option></select>
     </div>
+    <div class="upload-option-row">
+      <input type="checkbox" id="uploadNoFetchList" checked />
+      <div class="upload-option-text">
+        <label for="uploadNoFetchList">アップロード済み一覧の API 取得をスキップする</label>
+        <p class="upload-option-hint">オン（既定）: ローカルの一覧だけで判定し、すぐ処理を開始します。オフ: 起動時に YouTube API で一覧を取得します（時間がかかりますが、他端末でアップロードした分も反映しやすいです）。</p>
+      </div>
+    </div>
     <div>
+      <button type="button" class="btn btn-secondary" onclick="runUploadDryRun();">プレビュー（ドライラン）</button>
       <button type="button" class="btn btn-primary" onclick="runUpload();">アップロード実行</button>
-      <button type="button" class="btn btn-secondary" onclick="runUploadDryRun();">ドライラン（実際にはアップロードしない）</button>
     </div>
     <div id="uploadResult" class="result-box">
       <h3>アップロード結果</h3>
@@ -150,12 +353,21 @@
       </div>
     </div>
   </section>
+  </main>
 
   <div id="logModal" class="log-modal-overlay" aria-hidden="true">
     <div class="log-modal-dialog">
       <div class="log-modal-title" id="logModalTitle">実行中...</div>
       <div class="log-modal-body"><pre class="log-modal-log" id="logModalLog"></pre></div>
-      <div class="log-modal-footer"><button type="button" class="btn btn-secondary" id="logModalClose">閉じる</button></div>
+      <div class="log-modal-footer">
+        <div id="logModalFooterDefault" class="log-modal-footer-actions">
+          <button type="button" class="btn btn-secondary" id="logModalClose">閉じる</button>
+        </div>
+        <div id="logModalFooterSeparateConfirm" class="log-modal-footer-actions" style="display: none;">
+          <button type="button" class="btn btn-secondary" id="logModalSeparateCancel">キャンセル</button>
+          <button type="button" class="btn btn-primary" id="logModalSeparateRun">本実行する</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -164,25 +376,71 @@
     var logModalEl = document.getElementById('logModal');
     var logModalLogEl = document.getElementById('logModalLog');
     var logModalCloseBtn = document.getElementById('logModalClose');
+    var logModalFooterDefault = document.getElementById('logModalFooterDefault');
+    var logModalFooterSeparateConfirm = document.getElementById('logModalFooterSeparateConfirm');
+
+    function setLogModalFooterMode(mode) {
+      if (mode === 'separateConfirm') {
+        logModalFooterDefault.style.display = 'none';
+        logModalFooterSeparateConfirm.style.display = 'flex';
+      } else {
+        logModalFooterDefault.style.display = 'flex';
+        logModalFooterSeparateConfirm.style.display = 'none';
+      }
+    }
 
     function loadSettings() {
       fetch(API + '/api/settings').then(function(r) { return r.json(); }).then(function(s) {
         document.getElementById('sepSource').value = s.pathCamera || '';
         document.getElementById('sepTarget').value = s.pathMovie || '';
+        var noFetch = document.getElementById('uploadNoFetchList');
+        if (noFetch) noFetch.checked = s.uploadNoFetchList !== false;
+        loadMovieFolders();
       }).catch(function() {});
+    }
+
+    function saveUploadNoFetchListSetting() {
+      var el = document.getElementById('uploadNoFetchList');
+      if (!el) return;
+      fetch(API + '/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadNoFetchList: el.checked })
+      }).catch(function() {});
+    }
+
+    function movieFolderOptionPrefix() {
+      var p = document.getElementById('sepTarget').value.trim();
+      if (!p) return '動画保存用フォルダ';
+      var norm = p.replace(/\\/g, '/');
+      var parts = norm.split('/').filter(function(x) { return x.length > 0; });
+      return parts.length ? parts[parts.length - 1] : '動画保存用フォルダ';
     }
 
     function loadMovieFolders() {
       fetch(API + '/api/movie-folders').then(function(r) { return r.json(); }).then(function(data) {
         var sel = document.getElementById('uploadFolder');
+        var prev = sel.value;
         sel.innerHTML = '<option value="">— 選択 —</option>';
+        var prefix = movieFolderOptionPrefix();
         (data.folders || []).forEach(function(f) {
           var opt = document.createElement('option');
           opt.value = f;
-          opt.textContent = 'movie/' + f;
+          opt.textContent = prefix + '/' + f;
           sel.appendChild(opt);
         });
+        if (prev) sel.value = prev;
       }).catch(function() {});
+    }
+
+    function validateSeparatePaths() {
+      var source = document.getElementById('sepSource').value.trim();
+      var target = document.getElementById('sepTarget').value.trim();
+      if (!source || !target) {
+        alert('指定フォルダと動画保存用フォルダを選択してください。');
+        return false;
+      }
+      return true;
     }
 
     function openFolderPicker(isSource, callback) {
@@ -207,8 +465,10 @@
     }
     document.getElementById('browseSource').addEventListener('click', function() { openFolderPicker(true); });
     document.getElementById('browseTarget').addEventListener('click', function() { openFolderPicker(false); });
+    document.getElementById('uploadNoFetchList').addEventListener('change', saveUploadNoFetchListSetting);
 
     function openLogModal(title) {
+      setLogModalFooterMode('default');
       document.getElementById('logModalTitle').textContent = title;
       logModalLogEl.innerHTML = '';
       logModalCloseBtn.disabled = false;
@@ -225,18 +485,32 @@
       logModalLogEl.scrollTop = logModalLogEl.scrollHeight;
     }
     function closeLogModal() {
+      setLogModalFooterMode('default');
       logModalEl.classList.remove('visible');
       logModalEl.setAttribute('aria-hidden', 'true');
     }
     logModalCloseBtn.addEventListener('click', closeLogModal);
+    document.getElementById('logModalSeparateCancel').addEventListener('click', function() {
+      closeLogModal();
+    });
+    document.getElementById('logModalSeparateRun').addEventListener('click', function() {
+      setLogModalFooterMode('default');
+      startSeparateActual();
+    });
 
     function readSSEStream(response, onLine, onDone, onResult) {
       var reader = response.body.getReader();
       var buffer = '';
+      var doneCalled = false;
+      function callDone() {
+        if (doneCalled) return;
+        doneCalled = true;
+        if (onDone) onDone();
+      }
       function read() {
         reader.read().then(function(chunk) {
           if (chunk.done) {
-            if (onDone) onDone();
+            callDone();
             return;
           }
           buffer += new TextDecoder().decode(chunk.value);
@@ -249,12 +523,12 @@
                 var obj = JSON.parse(m[1]);
                 if (obj.line !== undefined) onLine(obj.line);
                 if (obj.result !== undefined && onResult) onResult(obj.result);
-                if (obj.done && onDone) onDone();
+                if (obj.done) callDone();
               } catch (e) {}
             }
           });
           read();
-        }).catch(function() { if (onDone) onDone(); });
+        }).catch(function() { callDone(); });
       }
       read();
     }
@@ -268,11 +542,21 @@
         .replace(/'/g, '&#39;');
     }
 
-    function executeSeparateRequest(options, title, onComplete) {
+    function executeSeparateRequest(options, title, onComplete, streamOpts) {
+      streamOpts = streamOpts || {};
+      if (!validateSeparatePaths()) return;
       var source = document.getElementById('sepSource').value.trim();
       var target = document.getElementById('sepTarget').value.trim();
       var latestResult = null;
-      openLogModal(title);
+      if (streamOpts.appendToExisting) {
+        document.getElementById('logModalTitle').textContent = title;
+        logModalCloseBtn.disabled = true;
+        appendLogLine('', 'info');
+        appendLogLine('──────────────── 本実行 ────────────────', 'info');
+      } else {
+        openLogModal(title);
+        logModalCloseBtn.disabled = true;
+      }
       fetch(API + '/api/separate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -301,14 +585,11 @@
     }
 
     function buildSeparateConfirmMessage(result) {
-      if (!result) return '分離を実行します。よろしいですか？';
+      if (!result) return '移動予定: （未取得）';
       var lines = [];
-      lines.push('プレビュー結果を確認してから本実行します。');
       lines.push('移動予定: ' + (result.count || 0) + ' 件');
       if (result.mtime_count) lines.push('更新日時フォールバック: ' + result.mtime_count + ' 件');
       if (result.unknown_count) lines.push('unknown 退避: ' + result.unknown_count + ' 件');
-      lines.push('');
-      lines.push('この内容で本実行しますか？');
       return lines.join('\n');
     }
 
@@ -316,23 +597,25 @@
       executeSeparateRequest(
         { dryRun: false },
         '実行中 — 写真と動画の分離',
-        function(result) { showMoveResult(false, result); }
+        function(result) { showMoveResult(false, result); },
+        { appendToExisting: true }
       );
     }
 
-    function runSeparate(confirm) {
-      if (!confirm) {
-        startSeparateActual();
-        return;
-      }
+    function runSeparateWithConfirm() {
       executeSeparateRequest(
         { dryRun: true },
         'プレビュー（確認用） — 写真と動画の分離',
         function(result) {
           showMoveResult(true, result);
-          if (window.confirm(buildSeparateConfirmMessage(result))) {
-            startSeparateActual();
-          }
+          appendLogLine('', 'info');
+          appendLogLine('──────────────── プレビュー結果サマリー ────────────────', 'info');
+          buildSeparateConfirmMessage(result).split('\n').forEach(function(line) {
+            appendLogLine(line, 'info');
+          });
+          appendLogLine('問題なければ「本実行する」を押してください。', 'info');
+          logModalCloseBtn.disabled = false;
+          setLogModalFooterMode('separateConfirm');
         }
       );
     }
@@ -379,14 +662,18 @@
     function runUpload() {
       var folder = document.getElementById('uploadFolder').value;
       if (!folder) { alert('フォルダを選択してください。'); return; }
-      if (!window.confirm('「movie/' + folder + '」をアップロードします。よろしいですか？')) return;
+      if (!window.confirm('「' + movieFolderOptionPrefix() + '/' + folder + '」をアップロードします。よろしいですか？')) return;
       var moviePath = document.getElementById('sepTarget').value.trim();
       var dir = moviePath ? moviePath.replace(/[\\/]+$/, '') + '/' + folder : folder;
-      openLogModal('実行中 — 動画のアップロード (movie/' + folder + ')');
+      openLogModal('実行中 — 動画のアップロード (' + movieFolderOptionPrefix() + '/' + folder + ')');
       fetch(API + '/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dir: dir, dryRun: false })
+        body: JSON.stringify({
+          dir: dir,
+          dryRun: false,
+          noFetchList: document.getElementById('uploadNoFetchList').checked
+        })
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
         readSSEStream(r, appendLogLine, function() {
@@ -406,11 +693,15 @@
       if (!folder) { alert('フォルダを選択してください。'); return; }
       var moviePath = document.getElementById('sepTarget').value.trim();
       var dir = moviePath ? moviePath.replace(/[\\/]+$/, '') + '/' + folder : folder;
-      openLogModal('実行中 — 動画のアップロード ドライラン (movie/' + folder + ')');
+      openLogModal('プレビュー（ドライラン） — 動画のアップロード (' + movieFolderOptionPrefix() + '/' + folder + ')');
       fetch(API + '/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dir: dir, dryRun: true })
+        body: JSON.stringify({
+          dir: dir,
+          dryRun: true,
+          noFetchList: document.getElementById('uploadNoFetchList').checked
+        })
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || '失敗'); });
         readSSEStream(r, appendLogLine, function() {
@@ -426,7 +717,7 @@
     }
 
     function showUploadResult(isDryRun, data) {
-      document.getElementById('uploadResult').querySelector('h3').textContent = isDryRun ? 'アップロード結果（ドライラン）' : 'アップロード結果';
+      document.getElementById('uploadResult').querySelector('h3').textContent = isDryRun ? 'アップロード結果（プレビュー／ドライラン）' : 'アップロード結果';
       var s = data.summary || {};
       document.getElementById('uploadResultDate').textContent = s.date || '—';
       document.getElementById('uploadResultDir').textContent = s.dir || '—';
@@ -472,7 +763,6 @@
     }
 
     loadSettings();
-    loadMovieFolders();
   </script>
 </body>
 </html>
