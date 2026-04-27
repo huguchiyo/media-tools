@@ -19,6 +19,11 @@ from apiclient.http import MediaFileUpload
 
 logger = logging.getLogger(__name__)
 
+
+class MissingLocationHeaderError(Exception):
+    """Resumable upload response misses Location header."""
+    pass
+
 # リトライ設定
 httplib2.RETRIES = 1
 MAX_RETRIES = 10
@@ -90,7 +95,42 @@ def initialize_upload(
         media_body=MediaFileUpload(file_path, chunksize=UPLOAD_CHUNK_SIZE, resumable=True)
     )
 
-    return resumable_upload(insert_request)
+    try:
+        return resumable_upload(insert_request)
+    except MissingLocationHeaderError as e:
+        logger.warning(
+            "Resumable upload failed due to missing Location header. "
+            "Falling back to non-resumable upload. detail=%s",
+            e,
+        )
+        return simple_upload(youtube, body, file_path)
+
+
+def simple_upload(youtube: build, body: dict, file_path: str) -> Optional[str]:
+    """
+    非リジュームで単発アップロードする。
+    リジューム応答の相性問題（Locationヘッダ欠落）時のフォールバック用。
+    """
+    request = youtube.videos().insert(
+        part=",".join(list(body.keys())),
+        body=body,
+        media_body=MediaFileUpload(file_path, resumable=False),
+    )
+    try:
+        logger.info("Uploading file (fallback: non-resumable)...")
+        response = request.execute()
+        if response and "id" in response:
+            video_id = response["id"]
+            logger.info("Video id '%s' was successfully uploaded.", video_id)
+            return video_id
+        logger.error("The upload failed with an unexpected response: %s", response)
+        return None
+    except HttpError as e:
+        logger.error("Non-resumable upload failed with HTTP %s:\n%s", e.resp.status, e.content)
+        raise
+    except Exception as e:
+        logger.error("Non-resumable upload failed: %s", e)
+        return None
 
 
 def resumable_upload(insert_request) -> Optional[str]:
@@ -137,6 +177,11 @@ def resumable_upload(insert_request) -> Optional[str]:
                 raise
 
         except RETRIABLE_EXCEPTIONS as e:
+            message = str(e)
+            if "missing a Location" in message:
+                # 一部環境でリジュームアップロード時に発生する既知の相性問題。
+                # 呼び出し元で非リジュームにフォールバックする。
+                raise MissingLocationHeaderError(message)
             error = f"A retriable error occurred: {e}"
 
         if error is not None:

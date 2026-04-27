@@ -2,7 +2,8 @@
 chcp 65001 >nul
 cd /d "%~dp0"
 
-set "VENV_PYTHON=..\.venv\Scripts\python.exe"
+set "VENV_PYTHON=..\.venv311\Scripts\python.exe"
+if not exist "%VENV_PYTHON%" set "VENV_PYTHON=..\.venv\Scripts\python.exe"
 
 echo.
 echo  写真・動画ツール UI を起動しています...

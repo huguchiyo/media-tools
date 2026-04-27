@@ -6,6 +6,8 @@ __pycache__/
 .Python
 *.egg-info/
 .eggs/
+.venv/
+.venv311/
 
 # 機密・認証（絶対にコミットしない）
 youtube/client_secrets*.json

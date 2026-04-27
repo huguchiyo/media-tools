@@ -27,6 +27,9 @@ pip install google-api-python-client google-auth-oauthlib httplib2
 依存が不足していると、UI 上で **「YouTube 認証を行う」** を押したときに `ModuleNotFoundError: No module named 'httplib2'` のようなエラーで止まります。  
 特に YouTube 関連は `google-api-python-client`, `google-auth-oauthlib`, `httplib2` が必要です。
 
+> 推奨実行環境: **Python 3.11 以上 / 64bit**（Windows）  
+> Python 3.8 系（特に 32bit）は Google 系ライブラリで非推奨警告が出やすく、通信相性問題時に不安定になることがあります。
+
 ### 2. Google Cloud 側を準備する
 
 YouTube へアップロードするには、Google Cloud 側の設定が必要です。AI に画面遷移を案内させながら進めるのがおすすめです。
@@ -104,6 +107,7 @@ Cursor の AI には、次のように頼むと進めやすいです。
 - テストユーザー未追加で `403 access_denied`  
 - Python 依存が不足していて UI や YouTube スクリプトが起動しない  
 - `httplib2` などの YouTube 用依存が不足していて、**「YouTube 認証を行う」** で `ModuleNotFoundError` が出る  
+- 一部環境で `Redirected but the response is missing a Location: header.` が出る（現在は自動で非リジュームアップロードにフォールバックして継続）
 
 迷ったら、まず AI に **`README.md` / `photo_video_ui/README.md` / `youtube/README.md` を読ませたうえで、今どこで詰まっているか** を伝えるのがおすすめです。
 
