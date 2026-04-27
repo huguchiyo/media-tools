@@ -119,9 +119,7 @@ def upload_dir_movies(
             youtube_admin = youtube_upload
     except Exception as e:
         logger.error(f"Failed to authenticate: {e}")
-        if not dry_run and (auto_add_to_playlist or auto_sort_playlist):
-            auto_add_to_playlist = False
-            auto_sort_playlist = False
+        return {'success': 0, 'failed': 0, 'skipped': 0, 'playlist_added': 0}
     
     # 2. アップロード済み一覧を取得（API取得 or ローカルファイル）
     paths.ensure_data_dir()

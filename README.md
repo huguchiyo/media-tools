@@ -17,12 +17,15 @@
 1. このリポジトリをクローンする。  
 2. Cursor でリポジトリを開く。  
 3. AI に **`README.md`**, **`photo_video_ui/README.md`**, **`youtube/README.md`** を読ませて、「YouTube アップロードまでに必要な作業を順番に教えて」と依頼する。  
-4. 必要な Python 依存を入れる。最低限、次を入れておく。  
+4. 必要な Python 依存を入れる。**UI の起動だけでなく、YouTube 認証ボタン / アップロード実行にも追加ライブラリが必要**です。初回セットアップ時に最低限、次を入れておく。  
 
 ```bash
 pip install -r photo_video_ui/requirements.txt
-pip install google-api-python-client oauth2client httplib2
+pip install google-api-python-client google-auth-oauthlib httplib2
 ```
+
+依存が不足していると、UI 上で **「YouTube 認証を行う」** を押したときに `ModuleNotFoundError: No module named 'httplib2'` のようなエラーで止まります。  
+特に YouTube 関連は `google-api-python-client`, `google-auth-oauthlib`, `httplib2` が必要です。
 
 ### 2. Google Cloud 側を準備する
 
@@ -69,6 +72,8 @@ UI からアップロードする前に、**「YouTube 認証を行う」** を�
 3. ブラウザで Google ログインと権限許可を行う。  
 4. 認証後、`youtube/youtube-admin-oauth2.json` が作成される。  
 
+認証ボタンで `ModuleNotFoundError` が出る場合は、先に上記の Python 依存をインストールしてください。
+
 もし `403 access_denied` や `insufficient authentication scopes` が出た場合は、次を確認します。
 
 - Google Cloud 側でテストユーザーに自分を追加しているか  
@@ -98,6 +103,7 @@ Cursor の AI には、次のように頼むと進めやすいです。
 - OAuth 同意画面の設定不足  
 - テストユーザー未追加で `403 access_denied`  
 - Python 依存が不足していて UI や YouTube スクリプトが起動しない  
+- `httplib2` などの YouTube 用依存が不足していて、**「YouTube 認証を行う」** で `ModuleNotFoundError` が出る  
 
 迷ったら、まず AI に **`README.md` / `photo_video_ui/README.md` / `youtube/README.md` を読ませたうえで、今どこで詰まっているか** を伝えるのがおすすめです。
 

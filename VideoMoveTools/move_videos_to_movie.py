@@ -489,8 +489,8 @@ def move_videos_from_source(
                 'note': note,
             })
             
-            # 移動元フォルダを記録（空になったら削除するため）
-            if 'source_folder' in item:
+            # ソース直下のルートフォルダは残し、空になったサブフォルダだけ削除対象にする
+            if 'source_folder' in item and item['source_folder'].resolve() != source_dir.resolve():
                 folders_to_check_empty.add(item['source_folder'])
             
         except Exception as e:

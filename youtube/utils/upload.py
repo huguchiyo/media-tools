@@ -11,6 +11,7 @@ import httplib2
 import random
 import time
 import logging
+from pathlib import Path
 from typing import Optional, List
 from apiclient.discovery import build
 from apiclient.errors import HttpError
@@ -30,6 +31,7 @@ RETRIABLE_EXCEPTIONS = (
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
+UPLOAD_CHUNK_SIZE = 1024 * 1024  # 1 MiB
 
 
 def initialize_upload(
@@ -59,6 +61,14 @@ def initialize_upload(
     if privacy_status not in VALID_PRIVACY_STATUSES:
         raise ValueError(f"Invalid privacy status: {privacy_status}")
 
+    file_size = Path(file_path).stat().st_size
+    logger.info(
+        "Preparing resumable upload: file=%s, size=%.2f MB, chunk_size=%.2f MB",
+        file_path,
+        file_size / (1024 * 1024),
+        UPLOAD_CHUNK_SIZE / (1024 * 1024),
+    )
+
     body = dict(
         snippet=dict(
             title=title,
@@ -75,9 +85,9 @@ def initialize_upload(
     insert_request = youtube.videos().insert(
         part=",".join(list(body.keys())),
         body=body,
-        # Setting "chunksize" equal to -1 means that the entire
-        # file will be uploaded in a single HTTP request.
-        media_body=MediaFileUpload(file_path, chunksize=-1, resumable=True)
+        # 小さめチャンクで送ることで、ネットワークが不安定な環境でも
+        # タイムアウト時に途中から再試行しやすくする。
+        media_body=MediaFileUpload(file_path, chunksize=UPLOAD_CHUNK_SIZE, resumable=True)
     )
 
     return resumable_upload(insert_request)

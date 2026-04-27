@@ -388,7 +388,8 @@ def api_youtube_auth():
         yield f"data: {json.dumps({'line': 'OAuth トークンをリセットしました。'})}\n\n"
         yield f"data: {json.dumps({'line': 'ブラウザが開いたら Google でログインし、「許可」を押してアップロード権限を付与してください。'})}\n\n"
         yield f"data: {json.dumps({'line': '（動画保存用フォルダ直下に動画はないため、この実行ではアップロードは行われません）'})}\n\n"
-        for line in stream_process(YOUTUBE_SCRIPT, ["--dir", dir_path], cwd=YOUTUBE_DIR):
+        # 認証ボタンでは認証だけを済ませたいので、アップロード済み一覧のAPI取得は行わない。
+        for line in stream_process(YOUTUBE_SCRIPT, ["--dir", dir_path, "--no-fetch-list"], cwd=YOUTUBE_DIR):
             yield f"data: {json.dumps({'line': line})}\n\n"
         yield "data: {\"done\": true}\n\n"
 

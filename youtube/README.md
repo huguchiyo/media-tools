@@ -55,8 +55,13 @@ Tools/youtube/
 
 1. **必要なライブラリのインストール**
 ```bash
-pip install google-api-python-client oauth2client
+pip install google-api-python-client google-auth-oauthlib httplib2
 ```
+
+- `httplib2` は OAuth 認証時にも必要です
+- `google-auth-oauthlib` はブラウザでの OAuth ログイン処理に使用します
+- ブラウザ UI の **「YouTube 認証を行う」** ボタンもこの依存を利用します
+- 不足していると `ModuleNotFoundError: No module named 'httplib2'` で認証が始まりません
 
 2. **OAuth認証情報の設定**
    - Google API ConsoleでOAuth 2.0クライアントIDを作成
