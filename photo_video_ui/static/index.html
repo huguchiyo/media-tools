@@ -955,6 +955,7 @@
         return '<tr><td>' + escapeHtml(row.from || '') + '</td><td>' + escapeHtml(row.to || '') + '</td><td>' + escapeHtml(row.year || '') + '</td><td>' + escapeHtml(row.date_source_label || '') + '</td><td>' + escapeHtml(row.note || '') + '</td></tr>';
       }).join('');
       document.getElementById('moveResult').classList.add('visible');
+      if (!isPreview) loadMovieFolders();
     }
 
     document.getElementById('btnYoutubeAuth').addEventListener('click', function() {
