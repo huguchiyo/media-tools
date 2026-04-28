@@ -19,6 +19,10 @@
 3. AI に **`README.md`**, **`photo_video_ui/README.md`**, **`youtube/README.md`** を読ませて、「YouTube アップロードまでに必要な作業を順番に教えて」と依頼する。  
 4. 必要な Python 依存を入れる。**UI の起動だけでなく、YouTube 認証ボタン / アップロード実行にも追加ライブラリが必要**です。初回セットアップ時に最低限、次を入れておく。  
 
+   **重要**: このリポジトリでは、仮想環境を **リポジトリ直下の `.venv` に一本化**します。  
+   `start_server.bat` も、通常の `python` ではなく、まず `.venv` を使う前提です。  
+   依存は **UI が実際に使う Python 環境** に入っている必要があります。
+
 ```bash
 pip install -r photo_video_ui/requirements.txt
 pip install google-api-python-client google-auth-oauthlib httplib2
@@ -26,6 +30,21 @@ pip install google-api-python-client google-auth-oauthlib httplib2
 
 依存が不足していると、UI 上で **「YouTube 認証を行う」** を押したときに `ModuleNotFoundError: No module named 'httplib2'` のようなエラーで止まります。  
 特に YouTube 関連は `google-api-python-client`, `google-auth-oauthlib`, `httplib2` が必要です。
+
+   リポジトリ直下の仮想環境を使う場合は、次のように **その Python を明示して** インストールするのが確実です。
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r photo_video_ui/requirements.txt
+.\.venv\Scripts\python.exe -m pip install google-api-python-client google-auth-oauthlib httplib2
+```
+
+   なお、最新の `photo_video_ui/start_server.bat` は、起動時に使用する Python を表示し、その環境に依存が足りなければ自動インストールを試みます。
+
+   `.venv` がまだ無い場合は、最初に次で作成してください。
+
+```powershell
+python -m venv .venv
+```
 
 > 推奨実行環境: **Python 3.11 以上 / 64bit**（Windows）  
 > Python 3.8 系（特に 32bit）は Google 系ライブラリで非推奨警告が出やすく、通信相性問題時に不安定になることがあります。
@@ -65,6 +84,8 @@ AI には、たとえば次のように頼むと進めやすいです。
 - または `photo_video_ui/app.py` を Python で起動  
 
 起動後、ブラウザで `http://127.0.0.1:5151` を開きます。
+
+`start_server.bat` は、まずリポジトリ直下の `.venv` を使い、その環境へ UI / YouTube 関連の依存が足りなければインストールしてから起動します。`.venv` が無い場合のみ `python` にフォールバックします。
 
 ### 5. YouTube 認証を完了する
 
@@ -201,7 +222,9 @@ python workflow.py --years 2024 2025
   - バックアップ: `*.backup`, `*.bak`
 
 - **クローン後にやること**  
-  1. `youtube/config.json.example` をコピーして `youtube/config.json` を作成し、必要ならパス等を編集。  
-  2. [Google API Console](https://console.cloud.google.com/) で OAuth 2.0 クライアントを作成し、`youtube/client_secrets.json` を配置。  
-  3. `pip install -r photo_video_ui/requirements.txt`（UI を使う場合）。  
-  4. 初回のアップロードまたは UI の「YouTube 認証を行う」でブラウザからログインし、トークンを発行する。
+  1. `python -m venv .venv` でリポジトリ直下に仮想環境を作成。  
+  2. `youtube/config.json.example` をコピーして `youtube/config.json` を作成し、必要ならパス等を編集。  
+  3. [Google API Console](https://console.cloud.google.com/) で OAuth 2.0 クライアントを作成し、`youtube/client_secrets.json` を配置。  
+  4. `.\.venv\Scripts\python.exe -m pip install -r photo_video_ui/requirements.txt`（UI を使う場合）。  
+  5. `.\.venv\Scripts\python.exe -m pip install google-api-python-client google-auth-oauthlib httplib2`。  
+  6. 初回のアップロードまたは UI の「YouTube 認証を行う」でブラウザからログインし、トークンを発行する。

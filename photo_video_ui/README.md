@@ -15,13 +15,23 @@
 - **エクスプローラー**: `Tools/photo_video_ui/start_server.bat` を**ダブルクリック**。数秒後にブラウザが自動で開きます。
 - **Cursor / VS Code**: メニュー **ターミナル → タスクの実行** で **「写真・動画ツール サーバー起動」** を選ぶ。その後ブラウザで http://127.0.0.1:5151 を開く。
 
+`start_server.bat` は、リポジトリ直下の `.venv` を使う前提です。  
+起動時に使用する Python を表示し、その環境に `Flask`, `google-auth-oauthlib`, `httplib2` などが足りなければ自動インストールを試みます。
+
+`.venv` がまだ無い場合は、最初に `python -m venv .venv` で作成してください。
+
 ### 手動でコマンドを打つ場合
 
-```bash
-cd Tools/photo_video_ui
-pip install -r requirements.txt
-python app.py
+```bat
+cd Tools\photo_video_ui
+set TOOLS_PY=..\.venv\Scripts\python.exe
+%TOOLS_PY% -m pip install -r requirements.txt
+%TOOLS_PY% -m pip install google-api-python-client google-auth-oauthlib httplib2
+%TOOLS_PY% app.py
 ```
+
+Windows では、手動起動時も **`start_server.bat` と同じ Python 環境** を使うのが安全です。  
+`python app.py` のようにシステム Python を直接使うと、UI が実際に使う仮想環境と依存がずれて `ModuleNotFoundError` になることがあります。
 
 ブラウザで **http://127.0.0.1:5151** を開いてください。
 
