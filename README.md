@@ -109,7 +109,7 @@ UI からアップロードする前に、**「YouTube 認証を行う」** を�
 1. UI で **指定フォルダ**（例: カメラのインポート先）と **動画保存用フォルダ**（例: 年別に整理した動画の置き場）を設定する。  
 2. まず **プレビュー（ドライラン）** で分離結果を確認する。  
 3. 必要なら **分離を実行**し、動画を年フォルダへ移動する。  
-4. **動画保存用フォルダ**直下のフォルダを選び、YouTube にアップロードする。  
+4. **動画保存用フォルダ**直下のフォルダを選び、必要に応じて **アップロード方式**（`simple` / `resumable` / `auto`）を切り替えて YouTube にアップロードする。  
 
 ### 7. AI に依頼するときのおすすめ
 
@@ -128,7 +128,8 @@ Cursor の AI には、次のように頼むと進めやすいです。
 - テストユーザー未追加で `403 access_denied`  
 - Python 依存が不足していて UI や YouTube スクリプトが起動しない  
 - `httplib2` などの YouTube 用依存が不足していて、**「YouTube 認証を行う」** で `ModuleNotFoundError` が出る  
-- 一部環境で `Redirected but the response is missing a Location: header.` が出る（現在は自動で非リジュームアップロードにフォールバックして継続）
+- 一部環境で `Redirected but the response is missing a Location: header.` が出る  
+  その場合は UI / CLI で **アップロード方式を `simple`** に切り替えると、重複を避けつつ成功しやすいです。`auto` は必要時のみフォールバックします。
 
 迷ったら、まず AI に **`README.md` / `photo_video_ui/README.md` / `youtube/README.md` を読ませたうえで、今どこで詰まっているか** を伝えるのがおすすめです。
 

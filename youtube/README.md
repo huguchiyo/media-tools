@@ -81,6 +81,12 @@ cp config.json.example config.json
 # 年フォルダを指定してアップロード（既定でタイトル一致でスキップ判定）
 python youtube_upload.py --dir "G:/path/to/movie/2025"
 
+# 非リジュームでアップロード（Location ヘッダ相性問題を避けたい場合）
+python youtube_upload.py --dir "G:/path/to/movie/2025" --upload-mode simple
+
+# リジュームのみでアップロード（自動フォールバックなし）
+python youtube_upload.py --dir "G:/path/to/movie/2025" --upload-mode resumable
+
 # API 一覧取得をスキップして短時間で開始（ローカル data/uploaded_from_youtube.txt のみ参照）
 python youtube_upload.py --dir "G:/path/to/movie/2025" --no-fetch-list
 
@@ -122,6 +128,7 @@ python youtube_upload.py --dir "G:/path/to/videos/" --title-only
     "movie_tag": "2025年",
     "privacy_status": "private",
     "category_id": "22",
+    "upload_mode": "simple",
     "uploaded_list_file": "./data/uploaded_list.txt"
 }
 ```
@@ -130,6 +137,7 @@ python youtube_upload.py --dir "G:/path/to/videos/" --title-only
 - `movie_tag`: 動画の説明文（タグ）
 - `privacy_status`: プライバシー設定（`public`, `private`, `unlisted`）
 - `category_id`: カテゴリID（22 = People & Blogs）
+- `upload_mode`: アップロード方式（`simple`, `resumable`, `auto`）
 - `uploaded_list_file`: アップロード済みリストファイルのパス（推奨: `./data/uploaded_list.txt`）
 
 ## 仕様

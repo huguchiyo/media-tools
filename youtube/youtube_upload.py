@@ -91,6 +91,7 @@ def upload_dir_movies(
     description: str,
     privacy_status: str = "private",
     category_id: str = "22",
+    upload_mode: str = "simple",
     auto_add_to_playlist: bool = True,
     auto_sort_playlist: bool = True,
     dry_run: bool = False,
@@ -217,7 +218,7 @@ def upload_dir_movies(
         try:
             video_id = upload.initialize_upload(
                 youtube_upload, movie_title, movie_path, description,
-                privacy_status, category_id
+                privacy_status, category_id, upload_mode=upload_mode
             )
             
             if video_id:
@@ -329,6 +330,7 @@ def load_config(config_file: str = "config.json") -> dict:
         "movie_tag": "2025年",
         "privacy_status": "private",
         "category_id": "22",
+        "upload_mode": "simple",
     }
     
     if os.path.exists(config_file):
@@ -377,7 +379,7 @@ if __name__ == '__main__':
     i = 1
     while i < len(sys.argv):
         arg = sys.argv[i]
-        if arg in ['--config', '--dir', '--tag', '--dry-run', '--no-fetch-list']:
+        if arg in ['--config', '--dir', '--tag', '--dry-run', '--no-fetch-list', '--upload-mode']:
             custom_args.append(arg)
             if arg in ['--dry-run', '--no-fetch-list']:
                 i += 1
@@ -408,6 +410,7 @@ if __name__ == '__main__':
     parser.add_argument('--tag', help='Movie tag/description (overrides config)')
     parser.add_argument('--dry-run', action='store_true', help='Dry run mode (no actual upload)')
     parser.add_argument('--no-fetch-list', action='store_true', help='Do not fetch uploaded list from YouTube API; use local data/uploaded_from_youtube.txt and append on success')
+    parser.add_argument('--upload-mode', choices=['simple', 'resumable', 'auto'], help='Upload mode: simple, resumable, or auto')
     
     args, unknown = parser.parse_known_args(custom_args)
     
@@ -439,6 +442,10 @@ if __name__ == '__main__':
     
     privacy_status = config['privacy_status']
     category_id = config['category_id']
+    upload_mode = args.upload_mode if args.upload_mode else config.get('upload_mode', 'simple')
+    if upload_mode not in upload.VALID_UPLOAD_MODES:
+        logger.warning(f"Invalid upload mode '{upload_mode}' in config/args. Falling back to simple.")
+        upload_mode = "simple"
 
     logger.info("=" * 80)
     logger.info("YouTube Upload Script")
@@ -446,6 +453,7 @@ if __name__ == '__main__':
     logger.info(f"Movie tag: {movie_tag}")
     logger.info(f"Privacy status: {privacy_status}")
     logger.info(f"Category ID: {category_id}")
+    logger.info(f"Upload mode: {upload_mode}")
     logger.info("=" * 80)
 
     # アップロード実行
@@ -455,6 +463,7 @@ if __name__ == '__main__':
             movie_tag,
             privacy_status,
             category_id,
+            upload_mode=upload_mode,
             auto_add_to_playlist=True,
             auto_sort_playlist=True,
             dry_run=args.dry_run,
@@ -470,6 +479,7 @@ if __name__ == '__main__':
             "dir": target_dir,
             "year": year_from_dir,
             "dry_run": args.dry_run,
+            "upload_mode": upload_mode,
             "success": stats.get("success", 0),
             "failed": stats.get("failed", 0),
             "skipped": stats.get("skipped", 0),

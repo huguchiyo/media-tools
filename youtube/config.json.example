@@ -3,6 +3,7 @@
     "movie_tag": "2025年",
     "privacy_status": "private",
     "category_id": "22",
+    "upload_mode": "simple",
     "uploaded_list_file": "./uploaded_list.txt"
 }
 

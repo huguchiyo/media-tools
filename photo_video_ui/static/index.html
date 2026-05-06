@@ -374,6 +374,15 @@
       <label id="uploadFolderLabel">アップロードするフォルダ（1つ）</label>
       <select id="uploadFolder"><option value="">— 選択 —</option></select>
     </div>
+    <div class="row">
+      <label id="uploadModeLabel">アップロード方式</label>
+      <select id="uploadMode">
+        <option value="simple" id="uploadModeOptionSimple">シンプル（非リジューム）</option>
+        <option value="resumable" id="uploadModeOptionResumable">リジューム</option>
+        <option value="auto" id="uploadModeOptionAuto">自動（必要時のみフォールバック）</option>
+      </select>
+      <p class="hint-text" id="uploadModeHint" style="margin: 0.35rem 0 0;">simple は互換性重視、resumable は大きい動画向け、auto は必要時のみ simple に切り替えます。</p>
+    </div>
     <div class="upload-option-row">
       <input type="checkbox" id="uploadNoFetchList" checked />
       <div class="upload-option-text">
@@ -459,6 +468,11 @@
         btnYoutubeAuth: 'YouTube 認証を行う',
         uploadFolderLabel: 'アップロードするフォルダ（1つ）',
         uploadFolderPlaceholder: '— 選択 —',
+        uploadModeLabel: 'アップロード方式',
+        uploadModeHint: 'simple は互換性重視、resumable は大きい動画向け、auto は必要時のみ simple に切り替えます。',
+        uploadModeOptionSimple: 'シンプル（非リジューム）',
+        uploadModeOptionResumable: 'リジューム',
+        uploadModeOptionAuto: '自動（必要時のみフォールバック）',
         uploadNoFetchListLabel: 'アップロード済み一覧の API 取得をスキップする',
         uploadNoFetchListHint: 'オン（既定）: ローカルの一覧だけで判定し、すぐ処理を開始します。オフ: 起動時に YouTube API で一覧を取得します（時間がかかりますが、他端末でアップロードした分も反映しやすいです）。',
         btnUploadPreview: 'プレビュー（ドライラン）',
@@ -534,6 +548,11 @@
         btnYoutubeAuth: 'Run YouTube authentication',
         uploadFolderLabel: 'Folder to upload (one folder)',
         uploadFolderPlaceholder: '— Select —',
+        uploadModeLabel: 'Upload mode',
+        uploadModeHint: 'Use simple for compatibility, resumable for larger files, and auto to try resumable first before falling back only if needed.',
+        uploadModeOptionSimple: 'Simple (non-resumable)',
+        uploadModeOptionResumable: 'Resumable',
+        uploadModeOptionAuto: 'Auto (fallback only if needed)',
         uploadNoFetchListLabel: 'Skip API fetch for uploaded video list',
         uploadNoFetchListHint: 'On (default): start immediately using only the local uploaded list. Off: fetch the list from the YouTube API at startup. This takes longer, but it reflects uploads made from other devices more reliably.',
         btnUploadPreview: 'Preview (dry run)',
@@ -648,6 +667,11 @@
       setHtml('sectionUploadHint', 'sectionUploadHint');
       setText('btnYoutubeAuth', 'btnYoutubeAuth');
       setText('uploadFolderLabel', 'uploadFolderLabel');
+      setText('uploadModeLabel', 'uploadModeLabel');
+      setText('uploadModeHint', 'uploadModeHint');
+      setText('uploadModeOptionSimple', 'uploadModeOptionSimple');
+      setText('uploadModeOptionResumable', 'uploadModeOptionResumable');
+      setText('uploadModeOptionAuto', 'uploadModeOptionAuto');
       setText('uploadNoFetchListLabel', 'uploadNoFetchListLabel');
       setText('uploadNoFetchListHint', 'uploadNoFetchListHint');
       setText('btnUploadPreview', 'btnUploadPreview');
@@ -706,17 +730,23 @@
         document.getElementById('sepTarget').value = s.pathMovie || '';
         var noFetch = document.getElementById('uploadNoFetchList');
         if (noFetch) noFetch.checked = s.uploadNoFetchList !== false;
+        var uploadMode = document.getElementById('uploadMode');
+        if (uploadMode) uploadMode.value = s.uploadMode || 'simple';
         loadMovieFolders();
       }).catch(function() {});
     }
 
-    function saveUploadNoFetchListSetting() {
-      var el = document.getElementById('uploadNoFetchList');
-      if (!el) return;
+    function saveUploadSettings() {
+      var noFetchEl = document.getElementById('uploadNoFetchList');
+      var uploadModeEl = document.getElementById('uploadMode');
+      if (!noFetchEl || !uploadModeEl) return;
       fetch(API + '/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uploadNoFetchList: el.checked })
+        body: JSON.stringify({
+          uploadNoFetchList: noFetchEl.checked,
+          uploadMode: uploadModeEl.value
+        })
       }).catch(function() {});
     }
 
@@ -776,7 +806,8 @@
     }
     document.getElementById('browseSource').addEventListener('click', function() { openFolderPicker(true); });
     document.getElementById('browseTarget').addEventListener('click', function() { openFolderPicker(false); });
-    document.getElementById('uploadNoFetchList').addEventListener('change', saveUploadNoFetchListSetting);
+    document.getElementById('uploadNoFetchList').addEventListener('change', saveUploadSettings);
+    document.getElementById('uploadMode').addEventListener('change', saveUploadSettings);
     document.getElementById('languageSelect').addEventListener('change', function(e) { setLanguage(e.target.value); });
 
     function openLogModal(title) {
@@ -987,7 +1018,8 @@
         body: JSON.stringify({
           dir: dir,
           dryRun: false,
-          noFetchList: document.getElementById('uploadNoFetchList').checked
+          noFetchList: document.getElementById('uploadNoFetchList').checked,
+          uploadMode: document.getElementById('uploadMode').value
         })
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || t('genericFailure')); });
@@ -1015,7 +1047,8 @@
         body: JSON.stringify({
           dir: dir,
           dryRun: true,
-          noFetchList: document.getElementById('uploadNoFetchList').checked
+          noFetchList: document.getElementById('uploadNoFetchList').checked,
+          uploadMode: document.getElementById('uploadMode').value
         })
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || t('genericFailure')); });

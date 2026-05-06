@@ -33,10 +33,16 @@ SETTINGS_JSON = DATA_DIR / "settings.json"
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 LAST_SEPARATE_RESULT = None
+VALID_UPLOAD_MODES = {"simple", "resumable", "auto"}
 
 
 def load_settings():
-    base = {"pathCamera": "", "pathMovie": "", "uploadNoFetchList": True}
+    base = {
+        "pathCamera": "",
+        "pathMovie": "",
+        "uploadNoFetchList": True,
+        "uploadMode": "simple",
+    }
     if not SETTINGS_JSON.exists():
         return base.copy()
     try:
@@ -47,6 +53,9 @@ def load_settings():
         out["pathMovie"] = (data.get("pathMovie") or "").strip()
         if "uploadNoFetchList" in data:
             out["uploadNoFetchList"] = bool(data["uploadNoFetchList"])
+        upload_mode = (data.get("uploadMode") or "").strip().lower()
+        if upload_mode in VALID_UPLOAD_MODES:
+            out["uploadMode"] = upload_mode
         return out
     except Exception:
         return base.copy()
@@ -120,6 +129,10 @@ def api_save_settings():
         s["pathMovie"] = data["pathMovie"]
     if "uploadNoFetchList" in data:
         s["uploadNoFetchList"] = bool(data["uploadNoFetchList"])
+    if "uploadMode" in data:
+        upload_mode = str(data["uploadMode"]).strip().lower()
+        if upload_mode in VALID_UPLOAD_MODES:
+            s["uploadMode"] = upload_mode
     save_settings(s)
     return jsonify(s)
 
@@ -414,6 +427,9 @@ def api_upload():
         no_fetch_list = bool(data["noFetchList"])
     else:
         no_fetch_list = bool(load_settings().get("uploadNoFetchList", True))
+    upload_mode = str(data.get("uploadMode") or load_settings().get("uploadMode", "simple")).strip().lower()
+    if upload_mode not in VALID_UPLOAD_MODES:
+        upload_mode = "simple"
 
     def generate():
         args = ["--dir", dir_path]
@@ -421,6 +437,7 @@ def api_upload():
             args.append("--no-fetch-list")
         if dry_run:
             args.append("--dry-run")
+        args.extend(["--upload-mode", upload_mode])
         for line in stream_process(YOUTUBE_SCRIPT, args, cwd=TOOLS_ROOT / "youtube"):
             yield f"data: {json.dumps({'line': line})}\n\n"
         yield "data: {\"done\": true}\n\n"

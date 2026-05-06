@@ -36,6 +36,7 @@ RETRIABLE_EXCEPTIONS = (
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
+VALID_UPLOAD_MODES = ("simple", "resumable", "auto")
 UPLOAD_CHUNK_SIZE = 1024 * 1024  # 1 MiB
 
 
@@ -46,7 +47,8 @@ def initialize_upload(
     description: str,
     privacy_status: str = "private",
     category_id: str = "22",
-    tags: Optional[List[str]] = None
+    tags: Optional[List[str]] = None,
+    upload_mode: str = "simple",
 ) -> Optional[str]:
     """
     動画のアップロードを初期化します。
@@ -65,10 +67,13 @@ def initialize_upload(
     """
     if privacy_status not in VALID_PRIVACY_STATUSES:
         raise ValueError(f"Invalid privacy status: {privacy_status}")
+    if upload_mode not in VALID_UPLOAD_MODES:
+        raise ValueError(f"Invalid upload mode: {upload_mode}")
 
     file_size = Path(file_path).stat().st_size
     logger.info(
-        "Preparing resumable upload: file=%s, size=%.2f MB, chunk_size=%.2f MB",
+        "Preparing upload: mode=%s, file=%s, size=%.2f MB, chunk_size=%.2f MB",
+        upload_mode,
         file_path,
         file_size / (1024 * 1024),
         UPLOAD_CHUNK_SIZE / (1024 * 1024),
@@ -86,6 +91,9 @@ def initialize_upload(
         )
     )
 
+    if upload_mode == "simple":
+        return simple_upload(youtube, body, file_path, reason="configured simple mode")
+
     # Call the API's videos.insert method to create and upload the video.
     insert_request = youtube.videos().insert(
         part=",".join(list(body.keys())),
@@ -95,18 +103,21 @@ def initialize_upload(
         media_body=MediaFileUpload(file_path, chunksize=UPLOAD_CHUNK_SIZE, resumable=True)
     )
 
+    if upload_mode == "resumable":
+        return resumable_upload(insert_request, fallback_on_missing_location=False)
+
     try:
-        return resumable_upload(insert_request)
+        return resumable_upload(insert_request, fallback_on_missing_location=True)
     except MissingLocationHeaderError as e:
         logger.warning(
             "Resumable upload failed due to missing Location header. "
             "Falling back to non-resumable upload. detail=%s",
             e,
         )
-        return simple_upload(youtube, body, file_path)
+        return simple_upload(youtube, body, file_path, reason="auto fallback after missing Location header")
 
 
-def simple_upload(youtube: build, body: dict, file_path: str) -> Optional[str]:
+def simple_upload(youtube: build, body: dict, file_path: str, reason: str = "simple upload") -> Optional[str]:
     """
     非リジュームで単発アップロードする。
     リジューム応答の相性問題（Locationヘッダ欠落）時のフォールバック用。
@@ -117,7 +128,7 @@ def simple_upload(youtube: build, body: dict, file_path: str) -> Optional[str]:
         media_body=MediaFileUpload(file_path, resumable=False),
     )
     try:
-        logger.info("Uploading file (fallback: non-resumable)...")
+        logger.info("Uploading file (non-resumable: %s)...", reason)
         response = request.execute()
         if response and "id" in response:
             video_id = response["id"]
@@ -133,7 +144,7 @@ def simple_upload(youtube: build, body: dict, file_path: str) -> Optional[str]:
         return None
 
 
-def resumable_upload(insert_request) -> Optional[str]:
+def resumable_upload(insert_request, fallback_on_missing_location: bool = False) -> Optional[str]:
     """
     リジューム可能なアップロードを実行します。
     指数バックオフ戦略を使用してリトライします。
@@ -180,8 +191,13 @@ def resumable_upload(insert_request) -> Optional[str]:
             message = str(e)
             if "missing a Location" in message:
                 # 一部環境でリジュームアップロード時に発生する既知の相性問題。
-                # 呼び出し元で非リジュームにフォールバックする。
-                raise MissingLocationHeaderError(message)
+                if fallback_on_missing_location:
+                    raise MissingLocationHeaderError(message)
+                logger.error(
+                    "Resumable upload cannot continue because the response is missing "
+                    "a Location header. Try upload_mode=simple or upload_mode=auto."
+                )
+                return None
             error = f"A retriable error occurred: {e}"
 
         if error is not None:
