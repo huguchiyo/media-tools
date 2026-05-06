@@ -3,13 +3,15 @@ chcp 65001 >nul
 cd /d "%~dp0"
 
 set "APP_PYTHON=..\.venv\Scripts\python.exe"
+if not exist "..\.venv\pyvenv.cfg" set "APP_PYTHON=..\.venv311\Scripts\python.exe"
 if not exist "%APP_PYTHON%" set "APP_PYTHON=python"
 
 echo.
 echo  写真・動画ツール UI を起動しています...
 echo  使用する Python: %APP_PYTHON%
 echo  ブラウザは少し待ってから開きます。
-echo  終了するときはこの窓で Ctrl+C を押すか、窓を閉じてください。
+echo.
+echo  終了するときはこの窓で Ctrl キーと C キーを押すか、窓を閉じてください。
 echo.
 
 echo  必要な Python 依存を確認しています...
@@ -35,7 +37,7 @@ goto :eof
 :install_failed
 echo.
 echo  依存インストールに失敗しました。
-echo  次のコマンドを、上に表示された Python で実行してください:
+echo  次のコマンドを、上に表示された Python で実行してください：
 echo    %APP_PYTHON% -m pip install -r requirements.txt
 echo    %APP_PYTHON% -m pip install google-api-python-client google-auth-oauthlib httplib2
 echo.
