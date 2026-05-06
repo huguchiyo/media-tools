@@ -192,6 +192,19 @@
       color: var(--muted);
       line-height: 1.45;
     }
+    .upload-auth-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .upload-auth-row .btn { flex-shrink: 0; align-self: center; }
+    .upload-auth-row .hint-text {
+      flex: 1 1 220px;
+      min-width: 0;
+      margin: 0;
+    }
     .row { margin-bottom: 0.75rem; }
     .row-cols { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; align-items: flex-start; }
     .row-cols .row { flex: 1 1 220px; min-width: 200px; max-width: 400px; margin-bottom: 0; }
@@ -366,33 +379,24 @@
   <section>
     <h2 id="sectionUploadTitle">2. 動画のアップロード</h2>
     <p class="section-lead" id="sectionUploadLead" style="font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>動画保存用フォルダ</strong>直下のフォルダを1つ選んで、YouTube にアップロードします。</p>
-    <p class="hint-text" id="sectionUploadHint" style="margin-bottom: 0.5rem;">初回や「invalid_grant」「403 Insufficient Permission」が出た場合は、先に<strong>YouTube 認証を行う</strong>を実行してください。ブラウザで Google にログインし、<strong>「許可」でアップロード権限を付与</strong>するとアップロードできるようになります。</p>
-    <div style="margin-bottom: 0.75rem;">
-      <button type="button" class="btn btn-secondary" id="btnYoutubeAuth">YouTube 認証を行う</button>
-    </div>
     <div class="row">
       <label id="uploadFolderLabel">アップロードするフォルダ（1つ）</label>
       <select id="uploadFolder"><option value="">— 選択 —</option></select>
     </div>
-    <div class="row">
-      <label id="uploadModeLabel">アップロード方式</label>
-      <select id="uploadMode">
-        <option value="simple" id="uploadModeOptionSimple">シンプル（非リジューム）</option>
-        <option value="resumable" id="uploadModeOptionResumable">リジューム</option>
-        <option value="auto" id="uploadModeOptionAuto">自動（必要時のみフォールバック）</option>
-      </select>
-      <p class="hint-text" id="uploadModeHint" style="margin: 0.35rem 0 0;">simple は互換性重視、resumable は大きい動画向け、auto は必要時のみ simple に切り替えます。</p>
+    <div class="upload-auth-row">
+      <button type="button" class="btn btn-secondary" id="btnYoutubeAuth">YouTube 認証を行う</button>
+      <p class="hint-text" id="sectionUploadHint">初回や「invalid_grant」「403 Insufficient Permission」が出た場合は、先に<strong>YouTube 認証を行う</strong>を実行してください。ブラウザで Google にログインし、<strong>「許可」でアップロード権限を付与</strong>するとアップロードできるようになります。</p>
     </div>
-    <div class="upload-option-row">
-      <input type="checkbox" id="uploadNoFetchList" checked />
-      <div class="upload-option-text">
-        <label for="uploadNoFetchList" id="uploadNoFetchListLabel">アップロード済み一覧の API 取得をスキップする</label>
-        <p class="upload-option-hint" id="uploadNoFetchListHint">オン（既定）: ローカルの一覧だけで判定し、すぐ処理を開始します。オフ: 起動時に YouTube API で一覧を取得します（時間がかかりますが、他端末でアップロードした分も反映しやすいです）。</p>
-      </div>
-    </div>
-    <div>
+    <div style="margin-bottom: 0.75rem;">
       <button type="button" class="btn btn-secondary" id="btnUploadPreview" onclick="runUploadDryRun();">プレビュー（ドライラン）</button>
       <button type="button" class="btn btn-primary" id="btnUploadRun" onclick="runUpload();">アップロード実行</button>
+    </div>
+    <div class="upload-option-row">
+      <input type="checkbox" id="uploadFetchListViaApi" />
+      <div class="upload-option-text">
+        <label for="uploadFetchListViaApi" id="uploadFetchListViaApiLabel">アップロード済み一覧をAPI 取得</label>
+        <p class="upload-option-hint" id="uploadFetchListViaApiHint">オフ（既定）: ローカルのアップロード済み一覧だけで判定し、すぐ処理を開始。<br>オン: アップロード済み一覧をYouTube API で取得してから処理を開始<br>　　（時間がかかるが、他端末でアップロードした分も反映しやすい）。</p>
+      </div>
     </div>
     <div id="uploadResult" class="result-box">
       <h3 id="uploadResultHeading">アップロード結果</h3>
@@ -468,13 +472,8 @@
         btnYoutubeAuth: 'YouTube 認証を行う',
         uploadFolderLabel: 'アップロードするフォルダ（1つ）',
         uploadFolderPlaceholder: '— 選択 —',
-        uploadModeLabel: 'アップロード方式',
-        uploadModeHint: 'simple は互換性重視、resumable は大きい動画向け、auto は必要時のみ simple に切り替えます。',
-        uploadModeOptionSimple: 'シンプル（非リジューム）',
-        uploadModeOptionResumable: 'リジューム',
-        uploadModeOptionAuto: '自動（必要時のみフォールバック）',
-        uploadNoFetchListLabel: 'アップロード済み一覧の API 取得をスキップする',
-        uploadNoFetchListHint: 'オン（既定）: ローカルの一覧だけで判定し、すぐ処理を開始します。オフ: 起動時に YouTube API で一覧を取得します（時間がかかりますが、他端末でアップロードした分も反映しやすいです）。',
+        uploadFetchListViaApiLabel: 'アップロード済み一覧をAPI 取得',
+        uploadFetchListViaApiHint: 'オフ（既定）: ローカルのアップロード済み一覧だけで判定し、すぐ処理を開始。<br>オン: アップロード済み一覧をYouTube API で取得してから処理を開始<br>　　（時間がかかるが、他端末でアップロードした分も反映しやすい）。',
         btnUploadPreview: 'プレビュー（ドライラン）',
         btnUploadRun: 'アップロード実行',
         uploadResultHeading: 'アップロード結果',
@@ -548,13 +547,8 @@
         btnYoutubeAuth: 'Run YouTube authentication',
         uploadFolderLabel: 'Folder to upload (one folder)',
         uploadFolderPlaceholder: '— Select —',
-        uploadModeLabel: 'Upload mode',
-        uploadModeHint: 'Use simple for compatibility, resumable for larger files, and auto to try resumable first before falling back only if needed.',
-        uploadModeOptionSimple: 'Simple (non-resumable)',
-        uploadModeOptionResumable: 'Resumable',
-        uploadModeOptionAuto: 'Auto (fallback only if needed)',
-        uploadNoFetchListLabel: 'Skip API fetch for uploaded video list',
-        uploadNoFetchListHint: 'On (default): start immediately using only the local uploaded list. Off: fetch the list from the YouTube API at startup. This takes longer, but it reflects uploads made from other devices more reliably.',
+        uploadFetchListViaApiLabel: 'Fetch uploaded list via YouTube API',
+        uploadFetchListViaApiHint: 'Off (default): use only the local uploaded list and start right away.<br>On: fetch the uploaded list via the YouTube API before processing<br>　　(takes longer, but reflects uploads from other devices more reliably).',
         btnUploadPreview: 'Preview (dry run)',
         btnUploadRun: 'Start upload',
         uploadResultHeading: 'Upload result',
@@ -667,13 +661,8 @@
       setHtml('sectionUploadHint', 'sectionUploadHint');
       setText('btnYoutubeAuth', 'btnYoutubeAuth');
       setText('uploadFolderLabel', 'uploadFolderLabel');
-      setText('uploadModeLabel', 'uploadModeLabel');
-      setText('uploadModeHint', 'uploadModeHint');
-      setText('uploadModeOptionSimple', 'uploadModeOptionSimple');
-      setText('uploadModeOptionResumable', 'uploadModeOptionResumable');
-      setText('uploadModeOptionAuto', 'uploadModeOptionAuto');
-      setText('uploadNoFetchListLabel', 'uploadNoFetchListLabel');
-      setText('uploadNoFetchListHint', 'uploadNoFetchListHint');
+      setText('uploadFetchListViaApiLabel', 'uploadFetchListViaApiLabel');
+      setHtml('uploadFetchListViaApiHint', 'uploadFetchListViaApiHint');
       setText('btnUploadPreview', 'btnUploadPreview');
       setText('btnUploadRun', 'btnUploadRun');
       setText('uploadResultDateLabel', 'uploadResultDateLabel');
@@ -728,24 +717,21 @@
       fetch(API + '/api/settings').then(function(r) { return r.json(); }).then(function(s) {
         document.getElementById('sepSource').value = s.pathCamera || '';
         document.getElementById('sepTarget').value = s.pathMovie || '';
-        var noFetch = document.getElementById('uploadNoFetchList');
-        if (noFetch) noFetch.checked = s.uploadNoFetchList !== false;
-        var uploadMode = document.getElementById('uploadMode');
-        if (uploadMode) uploadMode.value = s.uploadMode || 'simple';
+        var fetchApi = document.getElementById('uploadFetchListViaApi');
+        if (fetchApi) fetchApi.checked = s.uploadNoFetchList === false;
         loadMovieFolders();
       }).catch(function() {});
     }
 
     function saveUploadSettings() {
-      var noFetchEl = document.getElementById('uploadNoFetchList');
-      var uploadModeEl = document.getElementById('uploadMode');
-      if (!noFetchEl || !uploadModeEl) return;
+      var fetchApiEl = document.getElementById('uploadFetchListViaApi');
+      if (!fetchApiEl) return;
       fetch(API + '/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uploadNoFetchList: noFetchEl.checked,
-          uploadMode: uploadModeEl.value
+          uploadNoFetchList: !fetchApiEl.checked,
+          uploadMode: 'simple'
         })
       }).catch(function() {});
     }
@@ -806,8 +792,7 @@
     }
     document.getElementById('browseSource').addEventListener('click', function() { openFolderPicker(true); });
     document.getElementById('browseTarget').addEventListener('click', function() { openFolderPicker(false); });
-    document.getElementById('uploadNoFetchList').addEventListener('change', saveUploadSettings);
-    document.getElementById('uploadMode').addEventListener('change', saveUploadSettings);
+    document.getElementById('uploadFetchListViaApi').addEventListener('change', saveUploadSettings);
     document.getElementById('languageSelect').addEventListener('change', function(e) { setLanguage(e.target.value); });
 
     function openLogModal(title) {
@@ -1018,8 +1003,8 @@
         body: JSON.stringify({
           dir: dir,
           dryRun: false,
-          noFetchList: document.getElementById('uploadNoFetchList').checked,
-          uploadMode: document.getElementById('uploadMode').value
+          noFetchList: !document.getElementById('uploadFetchListViaApi').checked,
+          uploadMode: 'simple'
         })
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || t('genericFailure')); });
@@ -1047,8 +1032,8 @@
         body: JSON.stringify({
           dir: dir,
           dryRun: true,
-          noFetchList: document.getElementById('uploadNoFetchList').checked,
-          uploadMode: document.getElementById('uploadMode').value
+          noFetchList: !document.getElementById('uploadFetchListViaApi').checked,
+          uploadMode: 'simple'
         })
       }).then(function(r) {
         if (!r.ok) return r.json().then(function(d) { throw new Error(d.error || t('genericFailure')); });
