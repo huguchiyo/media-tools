@@ -2,8 +2,25 @@
 
 写真・動画のインポート後から YouTube アップロードまでを一連の流れで扱うためのツール群です。
 
-**日々の操作はブラウザの「写真・動画ツール」UI から行う想定です。** リポジトリ直下の **`start_server.bat`** をダブルクリックするか、`photo_video_ui` の手順で起動してください。  
+**日々の操作はブラウザの「写真・動画ツール」UI から行う想定です。** Windows はリポジトリ直下の **`start_server.bat`**、macOS は **`start_server.command`** を起動するか、`photo_video_ui` の手順で起動してください。  
 `workflow.py` による一括実行は CLI 向けの補助手段で、**通常は使いません**（後述の「ワークフロースクリプト」参照）。
+
+---
+
+## 動作環境
+
+- Python: **3.9 以上**
+- 推奨 Python: **3.11 以上 / 64bit**
+- 必要なもの:
+  - `pip`
+  - `venv`
+  - ブラウザ（UI 利用と OAuth 認証のため）
+  - GUI 環境（フォルダ選択ダイアログ利用時）
+- 任意:
+  - `ffprobe`  
+    動画メタデータから撮影日時を推定する場合に使用します。無い場合は、ファイル名や更新日時でフォールバックします。
+
+> Python 3.8 系でも一部環境では動く可能性がありますが、Google 系ライブラリとの相性や警告を避けるため、3.9 以上を前提とし、3.11 以上を推奨します。
 
 ---
 
@@ -79,13 +96,20 @@ AI には、たとえば次のように頼むと進めやすいです。
 
 ブラウザ UI を使う場合は、次のいずれかで起動します。
 
-- **`Tools/start_server.bat`** をダブルクリック（推奨）  
-- または `photo_video_ui/start_server.bat` をダブルクリック  
+- **Windows**: `Tools/start_server.bat` をダブルクリック（推奨）  
+- **macOS**: `Tools/start_server.command` をダブルクリック  
+- Windows/macOS 共通で `photo_video_ui/start_server.bat` / `photo_video_ui/start_server.command` を直接起動しても可  
 - または `photo_video_ui/app.py` を Python で起動  
 
 起動後、ブラウザで `http://127.0.0.1:5151` を開きます。
 
-`start_server.bat` は、まずリポジトリ直下の `.venv` を使い、その環境へ UI / YouTube 関連の依存が足りなければインストールしてから起動します。`.venv` が無い場合のみ `python` にフォールバックします。
+`start_server.bat` / `start_server.command` は、まずリポジトリ直下の `.venv` を使い、その環境へ UI / YouTube 関連の依存が足りなければインストールしてから起動します。`.venv` が無い場合のみシステムの Python にフォールバックします。
+
+macOS でダブルクリック起動できない場合は、最初に一度だけ次を実行してください。
+
+```bash
+chmod +x start_server.command photo_video_ui/start_server.command
+```
 
 ### 5. YouTube 認証を完了する
 
@@ -139,7 +163,7 @@ Cursor の AI には、次のように頼むと進めやすいです。
 
 分離（カメラ等 → 動画保存用フォルダ）と YouTube アップロードをブラウザから行います。操作手順・トラブルシュートは **[photo_video_ui/README.md](photo_video_ui/README.md)** を参照してください。
 
-- 起動: **`start_server.bat`**（リポジトリ直下）または `photo_video_ui/start_server.bat`  
+- 起動: **`start_server.bat`** / **`start_server.command`**（リポジトリ直下）または `photo_video_ui/start_server.bat` / `photo_video_ui/start_server.command`  
 - URL: `http://127.0.0.1:5151`
 
 ---
